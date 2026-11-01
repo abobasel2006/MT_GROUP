@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MT GROUP - بوابة السائق</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
+        :root {
+            --bg-color: #0f172a; --card-bg: #1e293b; --accent-amber: #f59e0b;
+            --accent-green: #10b981; --accent-red: #ef4444; --accent-indigo: #6366f1;
+            --text-main: #f8fafc; --text-sub: #94a3b8; --border-color: #334155;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-color); color: var(--text-main); padding-bottom: 40px; direction: rtl; }
+        header { background-color: rgba(30, 41, 59, 0.95); border-bottom: 1px solid rgba(245, 158, 11, 0.3); padding: 14px 16px; position: sticky; top: 0; z-index: 40; display: flex; justify-content: space-between; align-items: center; }
+        .logo-group { display: flex; align-items: center; gap: 10px; }
+        .logo-icon { background-color: var(--accent-amber); color: #000; width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 900; }
+        .header-title h1 { font-size: 14px; color: var(--accent-amber); font-weight: 800; }
+        .header-title p { font-size: 9px; color: var(--text-sub); }
+        .status-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 8px; background: rgba(16, 185, 129, 0.2); color: var(--accent-green); border: 1px solid var(--accent-green); display: flex; align-items: center; gap: 4px; }
+        main { max-width: 480px; margin: 0 auto; padding: 14px 16px; }
+        
+        .card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; margin-bottom: 14px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .card-title { font-size: 13px; font-weight: 800; color: var(--accent-amber); }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 11px; color: var(--text-sub); margin-bottom: 5px; font-weight: 600; }
+        .form-control { width: 100%; background-color: #0f172a; border: 1px solid var(--border-color); color: #fff; padding: 11px; border-radius: 10px; font-size: 12px; outline: none; }
+        .btn-main { width: 100%; background-color: var(--accent-amber); color: #000; border: none; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 13px; cursor: pointer; text-align: center; }
+        .btn-danger { background-color: var(--accent-red); color: #fff; }
+        
+        .timer-display { text-align: center; font-family: monospace; font-size: 26px; font-weight: 800; color: var(--accent-amber); background: rgba(15, 23, 42, 0.6); padding: 14px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 12px; }
+        
+        .fin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+        .fin-box { background-color: #0f172a; border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; text-align: center; }
+        .fin-box p.lbl { font-size: 9px; color: var(--text-sub); margin-bottom: 2px; }
+        .fin-box p.val { font-size: 13px; font-weight: 800; }
+        
+        .upload-box { border: 2px dashed var(--border-color); border-radius: 12px; padding: 14px; text-align: center; background: #0f172a; cursor: pointer; margin-bottom: 10px; position: relative; }
+        .upload-box input[type="file"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-group">
+            <div class="logo-icon">🚖</div>
+            <div class="header-title">
+                <h1>MT GROUP</h1>
+                <p>تطبيق السائق المعتمد</p>
+            </div>
+        </div>
+        <span id="connStatus" class="status-badge">🌐 متصل</span>
+    </header>
+
+    <main>
+        <!-- قسم تسجيل الدخول / اختيار السائق -->
+        <div id="loginSection" class="card">
+            <div class="card-header"><span class="card-title">👤 تسجيل دخول السائق</span></div>
+            <div class="form-group">
+                <label>اختر اسمك من الأسطول:</label>
+                <select id="driverSelect" class="form-control"><option value="">جاري تحميل الأسماء...</option></select>
+            </div>
+            <button onclick="driverLogin()" class="btn-main">دخول إلى لوحتي</button>
+        </div>
+
+        <!-- لوحة تحكم السائق -->
+        <div id="dashboardSection" style="display:none;">
+            <div class="card" style="border-color: var(--accent-amber);">
+                <div class="card-header">
+                    <span class="card-title" id="driverWelcomeTitle">أهلاً بك</span>
+                    <button onclick="driverLogout()" style="background:transparent; border:none; color:var(--accent-red); font-size:11px; cursor:pointer; font-weight:bold;">خروج ✕</button>
+                </div>
+                <div class="fin-grid">
+                    <div class="fin-box"><p class="lbl">أجر الساعات</p><p id="mySalary" class="val" style="color:var(--accent-green);">0 ل.س</p></div>
+                    <div class="fin-box"><p class="lbl">المكافآت</p><p id="myRewards" class="val" style="color:var(--accent-green);">0 ل.س</p></div>
+                    <div class="fin-box"><p class="lbl">السلف المسحوبة</p><p id="myAdvances" class="val" style="color:var(--accent-red);">0 ل.س</p></div>
+                    <div class="fin-box"><p class="lbl">الصافي المستحق</p><p id="myNet" class="val" style="color:var(--accent-amber);">0 ل.س</p></div>
+                </div>
+            </div>
+
+            <!-- إدارة الوردية -->
+            <div class="card">
+                <div class="card-header"><span class="card-title">⏱️ الوردية والعداد</span></div>
+                
+                <div id="offDutyControls">
+                    <div class="form-group">
+                        <label>رقم عداد البداية (كم):</label>
+                        <input type="number" id="startOdometerInput" placeholder="مثال: 45200" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>صورة عداد البداية:</label>
+                        <div class="upload-box" id="startImgBox">
+                            <span id="startImgText" style="font-size:11px; color:var(--text-sub);">📷 تصوير عداد البداية بالكاميرا مباشرة</span>
+                            <!-- capture="environment" تفتح الكاميرا الخلفية حصرياً -->
+                            <input type="file" accept="image/*" capture="environment" id="startOdoFile" onchange="handleImageUpload(this, 'start')">
+                        </div>
+                    </div>
+                    <button onclick="startShift()" class="btn-main">🟢 بدء الوردية</button>
+                </div>
+
+                <div id="onDutyControls" style="display:none;">
+                    <div id="liveTimer" class="timer-display">00:00:00</div>
+                    <div class="form-group">
+                        <label>رقم عداد النهاية (كم):</label>
+                        <input type="number" id="endOdometerInput" placeholder="مثال: 45350" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>صورة عداد النهاية:</label>
+                        <div class="upload-box" id="endImgBox">
+                            <span id="endImgText" style="font-size:11px; color:var(--text-sub);">📷 تصوير عداد النهاية بالكاميرا مباشرة</span>
+                            <!-- capture="environment" تفتح الكاميرا الخلفية حصرياً -->
+                            <input type="file" accept="image/*" capture="environment" id="endOdoFile" onchange="handleImageUpload(this, 'end')">
+                        </div>
+                    </div>
+                    <button onclick="endShift()" class="btn-main btn-danger">🛑 إنهاء الوردية وحفظ الساعات</button>
+                </div>
+            </div>
+
+            <!-- طلب سلفة -->
+            <div class="card">
+                <div class="card-header"><span class="card-title">💵 طلب سلفة مالية</span></div>
+                <div class="form-group">
+                    <label>المبلغ المطلوب (ل.س):</label>
+                    <input type="number" id="advanceAmountInput" placeholder="مثال: 50000" class="form-control">
+                </div>
+                <button onclick="requestAdvance()" class="btn-main" style="background-color: var(--accent-indigo); color:#fff;">إرسال طلب السلفة للإدارة</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Firebase Compat SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBXmCRvDy30zwtI904kG_4VL9cPeSpUYJA",
+            authDomain: "mt-taxi-b608f.firebaseapp.com",
+            projectId: "mt-taxi-b608f",
+            storageBucket: "mt-taxi-b608f.firebasestorage.app",
+            messagingSenderId: "757032602654",
+            appId: "1:757032602654:web:715ba83f30367de5e0720f",
+            databaseURL: "https://mt-taxi-b608f-default-rtdb.firebaseio.com/"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const HOURLY_RATE = 8500;
+
+        let currentDriver = localStorage.getItem('mt_driver_name') || null;
+        let currentCarId = localStorage.getItem('mt_driver_car_id') || null;
+        let activeCarsData = [];
+        let base64StartImg = "";
+        let base64EndImg = "";
+        let timerInterval = null;
+
+        function getSaturdayWeekId(dateObj = new Date()) {
+            const d = new Date(dateObj);
+            const day = d.getDay();
+            let diff = (day >= 6) ? (day - 6) : (day + 1);
+            d.setDate(d.getDate() - diff);
+            return `${d.getFullYear()}-W_Sat_${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+
+        db.ref('cars').on('value', (snapshot) => {
+            activeCarsData = snapshot.val() ? Object.values(snapshot.val()) : [];
+            populateDriverSelect();
+            if (currentDriver) checkDriverStatus();
+        });
+
+        function populateDriverSelect() {
+            const select = document.getElementById('driverSelect');
+            let options = '<option value="">اختر اسمك...</option>';
+            activeCarsData.forEach(car => {
+                if (car.dayDriver?.name?.trim()) {
+                    options += `<option value="${car.dayDriver.name}" data-carid="${car.id}">☀️ ${car.dayDriver.name} (${car.plate})</option>`;
+                }
+                if (car.nightDriver?.name?.trim()) {
+                    options += `<option value="${car.nightDriver.name}" data-carid="${car.id}">🌙 ${car.nightDriver.name} (${car.plate})</option>`;
+                }
+            });
+            select.innerHTML = options;
+        }
+
+        function driverLogin() {
+            const select = document.getElementById('driverSelect');
+            const selectedOpt = select.options[select.selectedIndex];
+            if (!select.value) {
+                alert("الرجاء اختيار اسمك من القائمة.");
+                return;
+            }
+            currentDriver = select.value;
+            currentCarId = selectedOpt.getAttribute('data-carid');
+
+            localStorage.setItem('mt_driver_name', currentDriver);
+            localStorage.setItem('mt_driver_car_id', currentCarId);
+            checkDriverStatus();
+        }
+
+        function driverLogout() {
+            localStorage.removeItem('mt_driver_name');
+            localStorage.removeItem('mt_driver_car_id');
+            currentDriver = null;
+            currentCarId = null;
+            clearInterval(timerInterval);
+            document.getElementById('loginSection').style.display = 'block';
+            document.getElementById('dashboardSection').style.display = 'none';
+        }
+
+        if (currentDriver) {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('dashboardSection').style.display = 'block';
+        }
+
+        function checkDriverStatus() {
+            if (!currentDriver) return;
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('dashboardSection').style.display = 'block';
+            document.getElementById('driverWelcomeTitle').innerText = `أهلاً، ${currentDriver}`;
+
+            db.ref(`activeShifts/${currentCarId}`).on('value', (snapshot) => {
+                const shift = snapshot.val();
+                if (shift && shift.driver === currentDriver) {
+                    document.getElementById('offDutyControls').style.display = 'none';
+                    document.getElementById('onDutyControls').style.display = 'block';
+                    startLiveTimer(shift.timestamp);
+                } else {
+                    document.getElementById('offDutyControls').style.display = 'block';
+                    document.getElementById('onDutyControls').style.display = 'none';
+                    clearInterval(timerInterval);
+                }
+            });
+
+            const weekId = getSaturdayWeekId();
+            db.ref(`weeklyRecords/${weekId}/${currentDriver}`).on('value', (snapshot) => {
+                const rec = snapshot.val() || { hours: 0, advances: 0, rewards: 0 };
+                const salary = (rec.hours || 0) * HOURLY_RATE;
+                const rewards = rec.rewards || 0;
+                const advances = rec.advances || 0;
+                const net = salary + rewards - advances;
+
+                document.getElementById('mySalary').innerText = `${Math.round(salary).toLocaleString()} ل.س`;
+                document.getElementById('myRewards').innerText = `${rewards.toLocaleString()} ل.س`;
+                document.getElementById('myAdvances').innerText = `${advances.toLocaleString()} ل.س`;
+                document.getElementById('myNet').innerText = `${Math.round(net).toLocaleString()} ل.س`;
+            });
+        }
+
+        function handleImageUpload(input, type) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 800;
+                    const scaleSize = MAX_WIDTH / img.width;
+                    canvas.width = MAX_WIDTH;
+                    canvas.height = img.height * scaleSize;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+
+                    if (type === 'start') {
+                        base64StartImg = compressedBase64;
+                        document.getElementById('startImgText').innerText = "✅ تم التقاط صورة البداية بنجاح";
+                        document.getElementById('startImgBox').style.borderColor = "var(--accent-green)";
+                    } else {
+                        base64EndImg = compressedBase64;
+                        document.getElementById('endImgText').innerText = "✅ تم التقاط صورة النهاية بنجاح";
+                        document.getElementById('endImgBox').style.borderColor = "var(--accent-green)";
+                    }
+                }
+                img.src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+
+        function startShift() {
+            const odo = Number(document.getElementById('startOdometerInput').value);
+            if (!odo) {
+                alert("الرجاء إدخال رقم عداد البداية.");
+                return;
+            }
+
+            const shiftData = {
+                driver: currentDriver,
+                timestamp: Date.now(),
+                odoStart: odo,
+                odoStartImg: base64StartImg || ""
+            };
+
+            db.ref(`activeShifts/${currentCarId}`).set(shiftData).then(() => {
+                const weekId = getSaturdayWeekId();
+                db.ref(`weeklyRecords/${weekId}/${currentDriver}`).update({
+                    odoStart: odo,
+                    odoStartImg: base64StartImg || "",
+                    imgTimestamp: Date.now()
+                });
+                alert("🟢 تم بدء الوردية بنجاح!");
+            }).catch(err => alert("خطأ: " + err.message));
+        }
+
+        function endShift() {
+            const odoEnd = Number(document.getElementById('endOdometerInput').value);
+            if (!odoEnd) {
+                alert("الرجاء إدخال رقم عداد النهاية.");
+                return;
+            }
+
+            db.ref(`activeShifts/${currentCarId}`).once('value', (snapshot) => {
+                const shift = snapshot.val();
+                if (!shift) return;
+
+                const elapsedSecs = Math.max(0, Math.floor((Date.now() - shift.timestamp) / 1000));
+                const elapsedHours = elapsedSecs / 3600;
+                const weekId = getSaturdayWeekId();
+
+                db.ref(`weeklyRecords/${weekId}/${currentDriver}`).once('value', (recSnap) => {
+                    const rec = recSnap.val() || { hours: 0 };
+                    const newTotalHours = (rec.hours || 0) + elapsedHours;
+
+                    const updates = {};
+                    updates[`activeShifts/${currentCarId}`] = null;
+                    updates[`weeklyRecords/${weekId}/${currentDriver}/hours`] = newTotalHours;
+                    updates[`weeklyRecords/${weekId}/${currentDriver}/odoEnd`] = odoEnd;
+                    updates[`weeklyRecords/${weekId}/${currentDriver}/odoEndImg`] = base64EndImg || "";
+
+                    db.ref().update(updates).then(() => {
+                        alert("✅ تم إنهاء الوردية وحفظ الساعات والعداد بنجاح!");
+                        location.reload();
+                    }).catch(err => alert("خطأ: " + err.message));
+                });
+            });
+        }
+
+        function startLiveTimer(startTime) {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                const diffSecs = Math.max(0, Math.floor((Date.now() - startTime) / 1000));
+                const h = Math.floor(diffSecs / 3600);
+                const m = Math.floor((diffSecs % 3600) / 60);
+                const s = diffSecs % 60;
+                const timerEl = document.getElementById('liveTimer');
+                if (timerEl) {
+                    timerEl.innerText = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                }
+            }, 1000);
+        }
+
+        function requestAdvance() {
+            const amount = Number(document.getElementById('advanceAmountInput').value);
+            if (!amount || amount <= 0) {
+                alert("الرجاء إدخال مبلغ صحيح للسلفة.");
+                return;
+            }
+
+            const weekId = getSaturdayWeekId();
+            db.ref(`weeklyRecords/${weekId}/${currentDriver}/advances`).once('value', (snapshot) => {
+                const currentAdv = snapshot.val() || 0;
+                db.ref(`weeklyRecords/${weekId}/${currentDriver}/advances`).set(currentAdv + amount).then(() => {
+                    alert("✅ تم إرسال طلب السلفة إلى الإدارة بنجاح بانتظار الاعتماد.");
+                    document.getElementById('advanceAmountInput').value = "";
+                });
+            });
+        }
+    </script>
+</body>
+</html>
+
