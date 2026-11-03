@@ -51,7 +51,7 @@
     <main>
         <!-- شاشة تسجيل الدخول -->
         <div id="loginSection" class="card">
-            <div class="card-header"><span class="card-title">🔑 تسجیل دخول السائق</span></div>
+            <div class="card-header"><span class="card-title">🔑 تسجيل دخول السائق</span></div>
             <div class="form-group">
                 <label>اختر اسمك من الأسطول</label>
                 <select id="loginDriverSelect" class="form-control"></select>
@@ -75,19 +75,21 @@
                 
                 <div id="startShiftControls">
                     <div class="form-group">
-                        <label>صورة عداد البداية (كاميرا أو معرض):</label>
-                        <input type="file" id="startOdoFile" accept="image/*" class="form-control">
+                        <label>📸 تصوير عداد البداية (الكاميرا مباشرة):</label>
+                        <!-- تم إضافة capture="environment" لفتح كاميرا الهاتف الخلفية مباشرة -->
+                        <input type="file" id="startOdoFile" accept="image/*" capture="environment" class="form-control">
                     </div>
-                    <button onclick="startShift()" class="btn-submit btn-green">🟢 بدء الوردية وتسجيل العداد</button>
+                    <button onclick="startShift()" class="btn-submit btn-green">📷 فتح الكاميرا وبدء الوردية</button>
                 </div>
 
                 <div id="endShiftControls" class="hidden">
                     <p style="font-size:11px; color:var(--accent-green); margin-bottom:8px; font-weight:bold;" id="activeShiftTimerText">الوردية قيد العمل...</p>
                     <div class="form-group">
-                        <label>صورة عداد النهاية (كاميرا أو معرض):</label>
-                        <input type="file" id="endOdoFile" accept="image/*" class="form-control">
+                        <label>📸 تصوير عداد النهاية (الكاميرا مباشرة):</label>
+                        <!-- تم إضافة capture="environment" لفتح كاميرا الهاتف الخلفية مباشرة -->
+                        <input type="file" id="endOdoFile" accept="image/*" capture="environment" class="form-control">
                     </div>
-                    <button onclick="endShift()" class="btn-submit btn-danger">🔴 إنهاء الوردية وتسجيل العداد</button>
+                    <button onclick="endShift()" class="btn-submit btn-danger">📷 فتح الكاميرا وإنهاء الوردية</button>
                 </div>
             </div>
 
@@ -133,7 +135,6 @@
         let allCarsData = [];
         let activeShiftsData = {};
 
-        // تحميل قائمة السائقين عند فتح التطبيق
         db.ref('cars').on('value', (snapshot) => {
             allCarsData = snapshot.val() ? Object.values(snapshot.val()) : [];
             updateDriverSelectOptions();
@@ -208,7 +209,7 @@
             if (fileInput.files && fileInput.files[0]) {
                 imgBase64 = await fileToBase64(fileInput.files[0]);
             } else {
-                alert("⚠️ يرجى التقاط أو رفع صورة عداد البداية.");
+                alert("⚠️ يرجى تصوير العداد من الكاميرا أولاً.");
                 return;
             }
 
@@ -226,7 +227,7 @@
             updates[`weeklyRecords/${weekId}/${currentDriver.name}/days/${dateKey}/status`] = 'present';
 
             db.ref().update(updates).then(() => {
-                alert("✅ تم بدء الوردية بنجاح!");
+                alert("✅ تم التقاط الصورة وبدء الوردية بنجاح!");
                 fileInput.value = "";
             });
         }
@@ -237,7 +238,7 @@
             if (fileInput.files && fileInput.files[0]) {
                 imgBase64 = await fileToBase64(fileInput.files[0]);
             } else {
-                alert("⚠️ يرجى التقاط أو رفع صورة عداد النهاية.");
+                alert("⚠️ يرجى تصوير العداد من الكاميرا أولاً.");
                 return;
             }
 
