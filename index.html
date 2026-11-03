@@ -43,6 +43,10 @@
         .notes-box { background: #0f172a; border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; max-height: 120px; overflow-y: auto; margin-bottom: 10px; font-size: 11px; }
         .note-item { padding: 6px; border-bottom: 1px solid rgba(51, 65, 85, 0.5); margin-bottom: 4px; }
         .note-item:last-child { border-bottom: none; }
+
+        .archive-box { background: #0f172a; border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; font-size: 11px; }
+        .archive-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(51, 65, 85, 0.4); }
+        .archive-row:last-child { border-bottom: none; }
     </style>
 </head>
 <body>
@@ -117,6 +121,17 @@
                         </div>
                     </div>
                     <button onclick="endShift()" class="btn-main btn-danger">🛑 إنهاء الوردية وحفظ الساعات</button>
+                </div>
+            </div>
+
+            <!-- أرشيف الساعات والأجور الشخصي -->
+            <div class="card" style="border-color: var(--accent-green);">
+                <div class="card-header"><span class="card-title" style="color:var(--accent-green);">📂 أرشيف الساعات والأجور (الأسبوع الحالي)</span></div>
+                <div id="driverArchiveBox" class="archive-box">
+                    <div class="archive-row"><span>إجمالي ساعات العمل:</span><b id="archHours" style="color:var(--accent-amber);">0 ساعة</b></div>
+                    <div class="archive-row"><span>قيمة الأجر الإجمالي:</span><b id="archSalary" style="color:var(--accent-green);">0 ل.س</b></div>
+                    <div class="archive-row"><span>إجمالي السلف والخصومات:</span><b id="archAdvances" style="color:var(--accent-red);">0 ل.س</b></div>
+                    <div class="archive-row" style="border-top:1px solid var(--border-color); margin-top:4px; padding-top:6px;"><span>حالة الراتب الأسبوعي:</span><b id="archStatus" style="color:var(--accent-amber);">بانتظار التقبيض</b></div>
                 </div>
             </div>
 
@@ -267,19 +282,26 @@
 
             const weekId = getSaturdayWeekId();
             db.ref(`weeklyRecords/${weekId}/${currentDriver}`).on('value', (snapshot) => {
-                const rec = snapshot.val() || { hours: 0, advances: 0, rewards: 0 };
+                const rec = snapshot.val() || { hours: 0, advances: 0, rewards: 0, paid: false };
                 const salary = (rec.hours || 0) * HOURLY_RATE;
                 const rewards = rec.rewards || 0;
                 const advances = rec.advances || 0;
                 const net = salary + rewards - advances;
 
+                // تحديث بطاقة الأجر أعلى الصفحة
                 document.getElementById('mySalary').innerText = `${Math.round(salary).toLocaleString()} ل.س`;
                 document.getElementById('myRewards').innerText = `${rewards.toLocaleString()} ل.س`;
                 document.getElementById('myAdvances').innerText = `${advances.toLocaleString()} ل.س`;
                 document.getElementById('myNet').innerText = `${Math.round(net).toLocaleString()} ل.س`;
+
+                // تحديث صندوق الأرشيف الشخصي
+                document.getElementById('archHours').innerText = `${(rec.hours || 0).toFixed(1)} ساعة`;
+                document.getElementById('archSalary').innerText = `${Math.round(salary).toLocaleString()} ل.س`;
+                document.getElementById('archAdvances').innerText = `${advances.toLocaleString()} ل.س`;
+                document.getElementById('archStatus').innerText = rec.paid ? '✅ تم التقبيض بنجاح' : '⏳ بانتظار الاعتماد والتقبيض';
+                document.getElementById('archStatus').style.color = rec.paid ? 'var(--accent-green)' : 'var(--accent-amber)';
             });
 
-            // الاستماع للملاحظات المباشرة
             db.ref(`notes/${currentDriver}`).on('value', (snapshot) => {
                 const notesObj = snapshot.val() || {};
                 const notesListEl = document.getElementById('driverNotesList');
@@ -303,13 +325,7 @@
         function sendDriverNote() {
             const text = document.getElementById('driverNoteInput').value.trim();
             if (!text) return;
-
-            const noteData = {
-                sender: currentDriver,
-                text: text,
-                timestamp: Date.now()
-            };
-
+            const noteData = { sender: currentDriver, text: text, timestamp: Date.now() };
             db.ref(`notes/${currentDriver}`).push(noteData).then(() => {
                 document.getElementById('driverNoteInput').value = "";
             });
