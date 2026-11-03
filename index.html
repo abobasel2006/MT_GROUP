@@ -39,6 +39,10 @@
         
         .upload-box { border: 2px dashed var(--border-color); border-radius: 12px; padding: 14px; text-align: center; background: #0f172a; cursor: pointer; margin-bottom: 10px; position: relative; }
         .upload-box input[type="file"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+
+        .notes-box { background: #0f172a; border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; max-height: 120px; overflow-y: auto; margin-bottom: 10px; font-size: 11px; }
+        .note-item { padding: 6px; border-bottom: 1px solid rgba(51, 65, 85, 0.5); margin-bottom: 4px; }
+        .note-item:last-child { border-bottom: none; }
     </style>
 </head>
 <body>
@@ -55,7 +59,7 @@
     </header>
 
     <main>
-        <!-- قسم تسجيل الدخول / اختيار السائق -->
+        <!-- تسجيل الدخول -->
         <div id="loginSection" class="card">
             <div class="card-header"><span class="card-title">👤 تسجيل دخول السائق</span></div>
             <div class="form-group">
@@ -80,7 +84,7 @@
                 </div>
             </div>
 
-            <!-- إدارة الوردية -->
+            <!-- الوردية والعداد -->
             <div class="card">
                 <div class="card-header"><span class="card-title">⏱️ الوردية والعداد</span></div>
                 
@@ -90,10 +94,9 @@
                         <input type="number" id="startOdometerInput" placeholder="مثال: 45200" class="form-control">
                     </div>
                     <div class="form-group">
-                        <label>صورة عداد البداية:</label>
+                        <label>صورة عداد البداية (الكاميرا الخلفية حصرياً):[cite: 2]</label>
                         <div class="upload-box" id="startImgBox">
-                            <span id="startImgText" style="font-size:11px; color:var(--text-sub);">📷 تصوير عداد البداية بالكاميرا مباشرة</span>
-                            <!-- capture="environment" تفتح الكاميرا الخلفية حصرياً -->
+                            <span id="startImgText" style="font-size:11px; color:var(--text-sub);">📷 التقاط صورة عداد البداية بالكاميرا</span>
                             <input type="file" accept="image/*" capture="environment" id="startOdoFile" onchange="handleImageUpload(this, 'start')">
                         </div>
                     </div>
@@ -107,15 +110,26 @@
                         <input type="number" id="endOdometerInput" placeholder="مثال: 45350" class="form-control">
                     </div>
                     <div class="form-group">
-                        <label>صورة عداد النهاية:</label>
+                        <label>صورة عداد النهاية (الكاميرا الخلفية حصرياً):[cite: 2]</label>
                         <div class="upload-box" id="endImgBox">
-                            <span id="endImgText" style="font-size:11px; color:var(--text-sub);">📷 تصوير عداد النهاية بالكاميرا مباشرة</span>
-                            <!-- capture="environment" تفتح الكاميرا الخلفية حصرياً -->
+                            <span id="endImgText" style="font-size:11px; color:var(--text-sub);">📷 التقاط صورة عداد النهاية بالكاميرا</span>
                             <input type="file" accept="image/*" capture="environment" id="endOdoFile" onchange="handleImageUpload(this, 'end')">
                         </div>
                     </div>
                     <button onclick="endShift()" class="btn-main btn-danger">🛑 إنهاء الوردية وحفظ الساعات</button>
                 </div>
+            </div>
+
+            <!-- نظام الملاحظات والتنبيهات المباشرة -->
+            <div class="card" style="border-color: var(--accent-indigo);">
+                <div class="card-header"><span class="card-title" style="color:var(--accent-indigo);">💬 التنبيهات والملاحظات مع الإدارة</span></div>
+                <div id="driverNotesList" class="notes-box">
+                    <p style="text-align:center; color:var(--text-sub);">لا توجد ملاحظات حالياً.</p>
+                </div>
+                <div class="form-group" style="margin-bottom:8px;">
+                    <input type="text" id="driverNoteInput" placeholder="اكتب ملاحظة أو طارئ للإدارة..." class="form-control">
+                </div>
+                <button onclick="sendDriverNote()" class="btn-main" style="background-color:var(--accent-indigo); color:#fff;">إرسال للإدارة</button>
             </div>
 
             <!-- طلب سلفة -->
@@ -146,7 +160,12 @@
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        const HOURLY_RATE = 8500;
+        let HOURLY_RATE = 8500;
+
+        db.ref('settings/hourlyRate').on('value', (snapshot) => {
+            if (snapshot.exists()) HOURLY_RATE = Number(snapshot.val()) || 8500;
+            if (currentDriver) checkDriverStatus();
+        });
 
         let currentDriver = localStorage.getItem('mt_driver_name') || null;
         let currentCarId = localStorage.getItem('mt_driver_car_id') || null;
@@ -166,11 +185,25 @@
         db.ref('cars').on('value', (snapshot) => {
             activeCarsData = snapshot.val() ? Object.values(snapshot.val()) : [];
             populateDriverSelect();
-            if (currentDriver) checkDriverStatus();
+            if (currentDriver) {
+                let exists = false;
+                activeCarsData.forEach(car => {
+                    if ((car.dayDriver?.name === currentDriver && car.id == currentCarId) ||
+                        (car.nightDriver?.name === currentDriver && car.id == currentCarId)) {
+                        exists = true;
+                    }
+                });
+                if (!exists && currentDriver) {
+                    driverLogout();
+                    return;
+                }
+                checkDriverStatus();
+            }
         });
 
         function populateDriverSelect() {
             const select = document.getElementById('driverSelect');
+            if (!select) return;
             let options = '<option value="">اختر اسمك...</option>';
             activeCarsData.forEach(car => {
                 if (car.dayDriver?.name?.trim()) {
@@ -214,7 +247,7 @@
         }
 
         function checkDriverStatus() {
-            if (!currentDriver) return;
+            if (!currentDriver || !currentCarId) return;
             document.getElementById('loginSection').style.display = 'none';
             document.getElementById('dashboardSection').style.display = 'block';
             document.getElementById('driverWelcomeTitle').innerText = `أهلاً، ${currentDriver}`;
@@ -245,6 +278,41 @@
                 document.getElementById('myAdvances').innerText = `${advances.toLocaleString()} ل.س`;
                 document.getElementById('myNet').innerText = `${Math.round(net).toLocaleString()} ل.س`;
             });
+
+            // الاستماع للملاحظات المباشرة
+            db.ref(`notes/${currentDriver}`).on('value', (snapshot) => {
+                const notesObj = snapshot.val() || {};
+                const notesListEl = document.getElementById('driverNotesList');
+                const notesArr = Object.values(notesObj);
+
+                if (notesArr.length === 0) {
+                    notesListEl.innerHTML = `<p style="text-align:center; color:var(--text-sub);">لا توجد ملاحظات حالياً.</p>`;
+                    return;
+                }
+
+                notesListEl.innerHTML = notesArr.map(n => `
+                    <div class="note-item" style="background:${n.sender === 'الإدارة' ? 'rgba(99, 102, 241, 0.15)' : 'transparent'}; border-radius:6px; padding:6px;">
+                        <span style="font-size:9px; color:var(--accent-amber); font-weight:bold;">${n.sender}:</span>
+                        <p style="color:#fff;">${n.text}</p>
+                    </div>
+                `).join('');
+                notesListEl.scrollTop = notesListEl.scrollHeight;
+            });
+        }
+
+        function sendDriverNote() {
+            const text = document.getElementById('driverNoteInput').value.trim();
+            if (!text) return;
+
+            const noteData = {
+                sender: currentDriver,
+                text: text,
+                timestamp: Date.now()
+            };
+
+            db.ref(`notes/${currentDriver}`).push(noteData).then(() => {
+                document.getElementById('driverNoteInput').value = "";
+            });
         }
 
         function handleImageUpload(input, type) {
@@ -256,8 +324,8 @@
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
                     const MAX_WIDTH = 800;
-                    const scaleSize = MAX_WIDTH / img.width;
-                    canvas.width = MAX_WIDTH;
+                    const scaleSize = img.width > MAX_WIDTH ? (MAX_WIDTH / img.width) : 1;
+                    canvas.width = img.width * scaleSize;
                     canvas.height = img.height * scaleSize;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
@@ -280,58 +348,56 @@
 
         function startShift() {
             const odo = Number(document.getElementById('startOdometerInput').value);
-            if (!odo) {
-                alert("الرجاء إدخال رقم عداد البداية.");
-                return;
-            }
+            if (!odo) { alert("الرجاء إدخال رقم عداد البداية."); return; }
 
-            const shiftData = {
-                driver: currentDriver,
-                timestamp: Date.now(),
-                odoStart: odo,
-                odoStartImg: base64StartImg || ""
-            };
+            const startTime = Date.now();
+            const todayKey = new Date().toISOString().split('T')[0];
+            const weekId = getSaturdayWeekId();
 
-            db.ref(`activeShifts/${currentCarId}`).set(shiftData).then(() => {
-                const weekId = getSaturdayWeekId();
-                db.ref(`weeklyRecords/${weekId}/${currentDriver}`).update({
-                    odoStart: odo,
-                    odoStartImg: base64StartImg || "",
-                    imgTimestamp: Date.now()
-                });
-                alert("🟢 تم بدء الوردية بنجاح!");
-            }).catch(err => alert("خطأ: " + err.message));
+            const shiftData = { driver: currentDriver, timestamp: startTime, odoStart: odo, odoStartImg: base64StartImg || "" };
+            const updates = {};
+            updates[`activeShifts/${currentCarId}`] = shiftData;
+            updates[`weeklyRecords/${weekId}/${currentDriver}/odoStart`] = odo;
+            updates[`weeklyRecords/${weekId}/${currentDriver}/odoStartImg`] = base64StartImg || "";
+            updates[`weeklyRecords/${weekId}/${currentDriver}/imgTimestamp`] = startTime;
+            updates[`weeklyRecords/${weekId}/${currentDriver}/days/${todayKey}/startTime`] = startTime;
+            updates[`weeklyRecords/${weekId}/${currentDriver}/days/${todayKey}/status`] = 'present';
+
+            db.ref().update(updates).then(() => { alert("🟢 تم بدء الوردية بنجاح!"); });
         }
 
         function endShift() {
             const odoEnd = Number(document.getElementById('endOdometerInput').value);
-            if (!odoEnd) {
-                alert("الرجاء إدخال رقم عداد النهاية.");
-                return;
-            }
+            if (!odoEnd) { alert("الرجاء إدخال رقم عداد النهاية."); return; }
 
             db.ref(`activeShifts/${currentCarId}`).once('value', (snapshot) => {
                 const shift = snapshot.val();
                 if (!shift) return;
 
-                const elapsedSecs = Math.max(0, Math.floor((Date.now() - shift.timestamp) / 1000));
+                const endTime = Date.now();
+                const elapsedSecs = Math.max(0, Math.floor((endTime - shift.timestamp) / 1000));
                 const elapsedHours = elapsedSecs / 3600;
                 const weekId = getSaturdayWeekId();
+                const todayKey = new Date().toISOString().split('T')[0];
 
                 db.ref(`weeklyRecords/${weekId}/${currentDriver}`).once('value', (recSnap) => {
                     const rec = recSnap.val() || { hours: 0 };
                     const newTotalHours = (rec.hours || 0) + elapsedHours;
+                    const newTodayHours = ((rec.days && rec.days[todayKey] && rec.days[todayKey].hours) || 0) + elapsedHours;
 
                     const updates = {};
                     updates[`activeShifts/${currentCarId}`] = null;
                     updates[`weeklyRecords/${weekId}/${currentDriver}/hours`] = newTotalHours;
                     updates[`weeklyRecords/${weekId}/${currentDriver}/odoEnd`] = odoEnd;
                     updates[`weeklyRecords/${weekId}/${currentDriver}/odoEndImg`] = base64EndImg || "";
+                    updates[`weeklyRecords/${weekId}/${currentDriver}/days/${todayKey}/endTime`] = endTime;
+                    updates[`weeklyRecords/${weekId}/${currentDriver}/days/${todayKey}/hours`] = newTodayHours;
+                    updates[`weeklyRecords/${weekId}/${currentDriver}/days/${todayKey}/status`] = 'present';
 
                     db.ref().update(updates).then(() => {
                         alert("✅ تم إنهاء الوردية وحفظ الساعات والعداد بنجاح!");
                         location.reload();
-                    }).catch(err => alert("خطأ: " + err.message));
+                    });
                 });
             });
         }
@@ -344,18 +410,13 @@
                 const m = Math.floor((diffSecs % 3600) / 60);
                 const s = diffSecs % 60;
                 const timerEl = document.getElementById('liveTimer');
-                if (timerEl) {
-                    timerEl.innerText = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-                }
+                if (timerEl) timerEl.innerText = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
             }, 1000);
         }
 
         function requestAdvance() {
             const amount = Number(document.getElementById('advanceAmountInput').value);
-            if (!amount || amount <= 0) {
-                alert("الرجاء إدخال مبلغ صحيح للسلفة.");
-                return;
-            }
+            if (!amount || amount <= 0) { alert("الرجاء إدخال مبلغ صحيح للسلفة."); return; }
 
             const weekId = getSaturdayWeekId();
             db.ref(`weeklyRecords/${weekId}/${currentDriver}/advances`).once('value', (snapshot) => {
@@ -369,4 +430,3 @@
     </script>
 </body>
 </html>
-
