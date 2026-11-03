@@ -40,9 +40,13 @@
         .upload-box { border: 2px dashed var(--border-color); border-radius: 12px; padding: 14px; text-align: center; background: #0f172a; cursor: pointer; margin-bottom: 10px; position: relative; }
         .upload-box input[type="file"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
 
-        .notes-box { background: #0f172a; border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; max-height: 120px; overflow-y: auto; margin-bottom: 10px; font-size: 11px; }
-        .note-item { padding: 6px; border-bottom: 1px solid rgba(51, 65, 85, 0.5); margin-bottom: 4px; }
-        .note-item:last-child { border-bottom: none; }
+        /* قسم الدردشة المستقل */
+        .chat-box { background: #0f172a; border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; height: 180px; overflow-y: auto; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px; }
+        .chat-bubble { max-width: 85%; padding: 8px 12px; border-radius: 10px; font-size: 11px; line-height: 1.4; }
+        .chat-bubble.driver { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); align-self: flex-start; color: #fff; }
+        .chat-bubble.admin { background: rgba(99, 102, 241, 0.2); border: 1px solid rgba(99, 102, 241, 0.4); align-self: flex-end; color: #fff; }
+        .chat-bubble .sender-name { font-size: 9px; font-weight: bold; margin-bottom: 2px; display: block; color: var(--accent-amber); }
+        .chat-bubble.admin .sender-name { color: var(--accent-indigo); }
 
         .archive-box { background: #0f172a; border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; font-size: 11px; }
         .archive-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(51, 65, 85, 0.4); }
@@ -124,6 +128,18 @@
                 </div>
             </div>
 
+            <!-- قسم الدردشة والملاحظات المستقل -->
+            <div class="card" style="border-color: var(--accent-indigo);">
+                <div class="card-header"><span class="card-title" style="color:var(--accent-indigo);">💬 قسم الملاحظات والدردشة مع الإدارة</span></div>
+                <div id="driverChatBox" class="chat-box">
+                    <p style="text-align:center; color:var(--text-sub); margin:auto;">لا توجد رسائل سابقة.</p>
+                </div>
+                <div class="form-group" style="margin-bottom:8px;">
+                    <input type="text" id="driverNoteInput" placeholder="اكتب رسالة أو ملاحظة للإدارة..." class="form-control">
+                </div>
+                <button onclick="sendDriverNote()" class="btn-main" style="background-color:var(--accent-indigo); color:#fff;">إرسال رسالة</button>
+            </div>
+
             <!-- أرشيف الساعات والأجور الشخصي -->
             <div class="card" style="border-color: var(--accent-green);">
                 <div class="card-header"><span class="card-title" style="color:var(--accent-green);">📂 أرشيف الساعات والأجور (الأسبوع الحالي)</span></div>
@@ -133,18 +149,6 @@
                     <div class="archive-row"><span>إجمالي السلف والخصومات:</span><b id="archAdvances" style="color:var(--accent-red);">0 ل.س</b></div>
                     <div class="archive-row" style="border-top:1px solid var(--border-color); margin-top:4px; padding-top:6px;"><span>حالة الراتب الأسبوعي:</span><b id="archStatus" style="color:var(--accent-amber);">بانتظار التقبيض</b></div>
                 </div>
-            </div>
-
-            <!-- نظام الملاحظات والتنبيهات المباشرة -->
-            <div class="card" style="border-color: var(--accent-indigo);">
-                <div class="card-header"><span class="card-title" style="color:var(--accent-indigo);">💬 التنبيهات والملاحظات مع الإدارة</span></div>
-                <div id="driverNotesList" class="notes-box">
-                    <p style="text-align:center; color:var(--text-sub);">لا توجد ملاحظات حالياً.</p>
-                </div>
-                <div class="form-group" style="margin-bottom:8px;">
-                    <input type="text" id="driverNoteInput" placeholder="اكتب ملاحظة أو طارئ للإدارة..." class="form-control">
-                </div>
-                <button onclick="sendDriverNote()" class="btn-main" style="background-color:var(--accent-indigo); color:#fff;">إرسال للإدارة</button>
             </div>
 
             <!-- طلب سلفة -->
@@ -288,13 +292,11 @@
                 const advances = rec.advances || 0;
                 const net = salary + rewards - advances;
 
-                // تحديث بطاقة الأجر أعلى الصفحة
                 document.getElementById('mySalary').innerText = `${Math.round(salary).toLocaleString()} ل.س`;
                 document.getElementById('myRewards').innerText = `${rewards.toLocaleString()} ل.س`;
                 document.getElementById('myAdvances').innerText = `${advances.toLocaleString()} ل.س`;
                 document.getElementById('myNet').innerText = `${Math.round(net).toLocaleString()} ل.س`;
 
-                // تحديث صندوق الأرشيف الشخصي
                 document.getElementById('archHours').innerText = `${(rec.hours || 0).toFixed(1)} ساعة`;
                 document.getElementById('archSalary').innerText = `${Math.round(salary).toLocaleString()} ل.س`;
                 document.getElementById('archAdvances').innerText = `${advances.toLocaleString()} ل.س`;
@@ -302,23 +304,27 @@
                 document.getElementById('archStatus').style.color = rec.paid ? 'var(--accent-green)' : 'var(--accent-amber)';
             });
 
+            // الاستماع للرسائل وعرضها بشكل فقاعات دردشة
             db.ref(`notes/${currentDriver}`).on('value', (snapshot) => {
                 const notesObj = snapshot.val() || {};
-                const notesListEl = document.getElementById('driverNotesList');
+                const chatBoxEl = document.getElementById('driverChatBox');
                 const notesArr = Object.values(notesObj);
 
                 if (notesArr.length === 0) {
-                    notesListEl.innerHTML = `<p style="text-align:center; color:var(--text-sub);">لا توجد ملاحظات حالياً.</p>`;
+                    chatBoxEl.innerHTML = `<p style="text-align:center; color:var(--text-sub); margin:auto;">لا توجد رسائل سابقة.</p>`;
                     return;
                 }
 
-                notesListEl.innerHTML = notesArr.map(n => `
-                    <div class="note-item" style="background:${n.sender === 'الإدارة' ? 'rgba(99, 102, 241, 0.15)' : 'transparent'}; border-radius:6px; padding:6px;">
-                        <span style="font-size:9px; color:var(--accent-amber); font-weight:bold;">${n.sender}:</span>
-                        <p style="color:#fff;">${n.text}</p>
-                    </div>
-                `).join('');
-                notesListEl.scrollTop = notesListEl.scrollHeight;
+                chatBoxEl.innerHTML = notesArr.map(n => {
+                    const isAdmin = n.sender === 'الإدارة';
+                    return `
+                        <div class="chat-bubble ${isAdmin ? 'admin' : 'driver'}">
+                            <span class="sender-name">${n.sender}</span>
+                            <p>${n.text}</p>
+                        </div>
+                    `;
+                }).join('');
+                chatBoxEl.scrollTop = chatBoxEl.scrollHeight;
             });
         }
 
