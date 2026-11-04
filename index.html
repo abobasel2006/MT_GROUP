@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MT GROUP - بوابة السائق</title>
+    <title>MT GROUP - بوابة السائقين</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
         :root {
@@ -12,45 +12,27 @@
             --text-main: #f8fafc; --text-sub: #94a3b8; --border-color: #334155;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background-color: var(--bg-color); color: var(--text-main); padding-bottom: 40px; direction: rtl; }
-        header { background-color: rgba(30, 41, 59, 0.95); border-bottom: 1px solid rgba(245, 158, 11, 0.3); padding: 14px 16px; position: sticky; top: 0; z-index: 40; display: flex; justify-content: space-between; align-items: center; }
+        body { background-color: var(--bg-color); color: var(--text-main); padding-bottom: 30px; direction: rtl; }
+        header { background-color: rgba(30, 41, 59, 0.95); border-bottom: 1px solid rgba(245, 158, 11, 0.3); padding: 12px 16px; position: sticky; top: 0; z-index: 40; display: flex; justify-content: space-between; align-items: center; }
         .logo-group { display: flex; align-items: center; gap: 10px; }
         .logo-icon { background-color: var(--accent-amber); color: #000; width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 900; }
         .header-title h1 { font-size: 14px; color: var(--accent-amber); font-weight: 800; }
         .header-title p { font-size: 9px; color: var(--text-sub); }
-        .status-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 8px; background: rgba(16, 185, 129, 0.2); color: var(--accent-green); border: 1px solid var(--accent-green); display: flex; align-items: center; gap: 4px; }
-        main { max-width: 480px; margin: 0 auto; padding: 14px 16px; }
-        
-        .card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; margin-bottom: 14px; }
-        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        main { max-width: 480px; margin: 0 auto; padding: 12px 16px; }
+        .card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 14px; margin-bottom: 12px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .card-title { font-size: 13px; font-weight: 800; color: var(--accent-amber); }
-        .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; font-size: 11px; color: var(--text-sub); margin-bottom: 5px; font-weight: 600; }
-        .form-control { width: 100%; background-color: #0f172a; border: 1px solid var(--border-color); color: #fff; padding: 11px; border-radius: 10px; font-size: 12px; outline: none; }
-        .btn-main { width: 100%; background-color: var(--accent-amber); color: #000; border: none; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 13px; cursor: pointer; text-align: center; }
+        .form-group { margin-bottom: 10px; }
+        .form-group label { display: block; font-size: 11px; color: var(--text-sub); margin-bottom: 4px; font-weight: 600; }
+        .form-control { width: 100%; background-color: #0f172a; border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 10px; font-size: 12px; outline: none; }
+        .btn-submit { width: 100%; background-color: var(--accent-amber); color: #000; border: none; padding: 11px; border-radius: 10px; font-weight: 800; font-size: 12px; cursor: pointer; margin-top: 4px; }
         .btn-danger { background-color: var(--accent-red); color: #fff; }
-        
-        .timer-display { text-align: center; font-family: monospace; font-size: 26px; font-weight: 800; color: var(--accent-amber); background: rgba(15, 23, 42, 0.6); padding: 14px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 12px; }
-        
-        .fin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
-        .fin-box { background-color: #0f172a; border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; text-align: center; }
-        .fin-box p.lbl { font-size: 9px; color: var(--text-sub); margin-bottom: 2px; }
-        .fin-box p.val { font-size: 13px; font-weight: 800; }
-        
-        .upload-box { border: 2px dashed var(--border-color); border-radius: 12px; padding: 14px; text-align: center; background: #0f172a; cursor: pointer; margin-bottom: 10px; position: relative; }
-        .upload-box input[type="file"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-
-        /* قسم الدردشة المستقل */
-        .chat-box { background: #0f172a; border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; height: 180px; overflow-y: auto; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px; }
-        .chat-bubble { max-width: 85%; padding: 8px 12px; border-radius: 10px; font-size: 11px; line-height: 1.4; }
-        .chat-bubble.driver { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); align-self: flex-start; color: #fff; }
-        .chat-bubble.admin { background: rgba(99, 102, 241, 0.2); border: 1px solid rgba(99, 102, 241, 0.4); align-self: flex-end; color: #fff; }
-        .chat-bubble .sender-name { font-size: 9px; font-weight: bold; margin-bottom: 2px; display: block; color: var(--accent-amber); }
-        .chat-bubble.admin .sender-name { color: var(--accent-indigo); }
-
-        .archive-box { background: #0f172a; border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; font-size: 11px; }
-        .archive-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(51, 65, 85, 0.4); }
-        .archive-row:last-child { border-bottom: none; }
+        .btn-green { background-color: var(--accent-green); color: #000; }
+        .driver-info-box { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; margin-bottom: 12px; font-size: 11px; display: flex; justify-content: space-between; align-items: center; }
+        .chat-box { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-color); border-radius: 10px; padding: 8px; height: 120px; overflow-y: auto; margin-bottom: 8px; font-size: 10px; }
+        .chat-msg { margin-bottom: 6px; padding: 4px 8px; border-radius: 6px; background: rgba(51, 65, 85, 0.4); }
+        .chat-msg.admin { background: rgba(99, 102, 241, 0.2); border-right: 2px solid var(--accent-indigo); }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
@@ -59,111 +41,78 @@
         <div class="logo-group">
             <div class="logo-icon">🚖</div>
             <div class="header-title">
-                <h1>MT GROUP</h1>
-                <p>تطبيق السائق المعتمد</p>
+                <h1>MT GROUP DRIVER</h1>
+                <p>بوابة السائقين والورديات</p>
             </div>
         </div>
-        <span id="connStatus" class="status-badge">🌐 متصل</span>
+        <button id="logoutBtn" onclick="logoutDriver()" class="hidden" style="background:transparent; border:1px solid var(--accent-red); color:var(--accent-red); border-radius:8px; padding:4px 8px; font-size:10px; cursor:pointer;">خروج</button>
     </header>
 
     <main>
-        <!-- تسجيل الدخول -->
+        <!-- شاشة تسجيل الدخول -->
         <div id="loginSection" class="card">
-            <div class="card-header"><span class="card-title">👤 تسجيل دخول السائق</span></div>
+            <div class="card-header"><span class="card-title">🔑 تسجيل دخول السائق</span></div>
             <div class="form-group">
-                <label>اختر اسمك من الأسطول:</label>
-                <select id="driverSelect" class="form-control"><option value="">جاري تحميل الأسماء...</option></select>
+                <label>اختر اسمك من الأسطول</label>
+                <select id="loginDriverSelect" class="form-control"></select>
             </div>
-            <button onclick="driverLogin()" class="btn-main">دخول إلى لوحتي</button>
+            <button onclick="loginDriver()" class="btn-submit">دخول</button>
         </div>
 
-        <!-- لوحة تحكم السائق -->
-        <div id="dashboardSection" style="display:none;">
-            <div class="card" style="border-color: var(--accent-amber);">
-                <div class="card-header">
-                    <span class="card-title" id="driverWelcomeTitle">أهلاً بك</span>
-                    <button onclick="driverLogout()" style="background:transparent; border:none; color:var(--accent-red); font-size:11px; cursor:pointer; font-weight:bold;">خروج ✕</button>
+        <!-- الشاشة الرئيسية للسائق -->
+        <div id="driverDashboard" class="hidden">
+            <div class="driver-info-box">
+                <div>
+                    <span id="welcomeDriverName" style="font-weight:800; color:var(--accent-amber); font-size:13px;"></span>
+                    <p id="driverCarInfo" style="color:var(--text-sub); margin-top:2px;"></p>
                 </div>
-                <div class="fin-grid">
-                    <div class="fin-box"><p class="lbl">أجر الساعات</p><p id="mySalary" class="val" style="color:var(--accent-green);">0 ل.س</p></div>
-                    <div class="fin-box"><p class="lbl">المكافآت</p><p id="myRewards" class="val" style="color:var(--accent-green);">0 ل.س</p></div>
-                    <div class="fin-box"><p class="lbl">السلف المسحوبة</p><p id="myAdvances" class="val" style="color:var(--accent-red);">0 ل.س</p></div>
-                    <div class="fin-box"><p class="lbl">الصافي المستحق</p><p id="myNet" class="val" style="color:var(--accent-amber);">0 ل.س</p></div>
-                </div>
+                <span id="shiftStatusBadge" style="font-size:9px; font-weight:700; padding:3px 8px; border-radius:6px; background:rgba(148,163,184,0.1); color:var(--text-sub);">في الاستراحة</span>
             </div>
 
-            <!-- الوردية والعداد -->
+            <!-- لوحة التحكم بالوردية -->
             <div class="card">
-                <div class="card-header"><span class="card-title">⏱️ الوردية والعداد</span></div>
+                <div class="card-header"><span class="card-title">⏱️ إدارة وردية العمل والعداد</span></div>
                 
-                <div id="offDutyControls">
+                <div id="startShiftControls">
                     <div class="form-group">
-                        <label>رقم عداد البداية (كم):</label>
-                        <input type="number" id="startOdometerInput" placeholder="مثال: 45200" class="form-control">
+                        <label>📸 تصوير عداد البداية (الكاميرا مباشرة):</label>
+                        <input type="file" id="startOdoFile" accept="image/*" capture="environment" class="form-control">
                     </div>
-                    <div class="form-group">
-                        <label>صورة عداد البداية (الكاميرا الخلفية حصرياً):[cite: 2]</label>
-                        <div class="upload-box" id="startImgBox">
-                            <span id="startImgText" style="font-size:11px; color:var(--text-sub);">📷 التقاط صورة عداد البداية بالكاميرا</span>
-                            <input type="file" accept="image/*" capture="environment" id="startOdoFile" onchange="handleImageUpload(this, 'start')">
-                        </div>
-                    </div>
-                    <button onclick="startShift()" class="btn-main">🟢 بدء الوردية</button>
+                    <button onclick="startShift()" class="btn-submit btn-green">📷 فتح الكاميرا وبدء الوردية</button>
                 </div>
 
-                <div id="onDutyControls" style="display:none;">
-                    <div id="liveTimer" class="timer-display">00:00:00</div>
+                <div id="endShiftControls" class="hidden">
+                    <p style="font-size:11px; color:var(--accent-green); margin-bottom:8px; font-weight:bold;" id="activeShiftTimerText">الوردية قيد العمل...</p>
                     <div class="form-group">
-                        <label>رقم عداد النهاية (كم):</label>
-                        <input type="number" id="endOdometerInput" placeholder="مثال: 45350" class="form-control">
+                        <label>📸 تصوير عداد النهاية (الكاميرا مباشرة):</label>
+                        <input type="file" id="endOdoFile" accept="image/*" capture="environment" class="form-control">
                     </div>
-                    <div class="form-group">
-                        <label>صورة عداد النهاية (الكاميرا الخلفية حصرياً):[cite: 2]</label>
-                        <div class="upload-box" id="endImgBox">
-                            <span id="endImgText" style="font-size:11px; color:var(--text-sub);">📷 التقاط صورة عداد النهاية بالكاميرا</span>
-                            <input type="file" accept="image/*" capture="environment" id="endOdoFile" onchange="handleImageUpload(this, 'end')">
-                        </div>
-                    </div>
-                    <button onclick="endShift()" class="btn-main btn-danger">🛑 إنهاء الوردية وحفظ الساعات</button>
+                    <button onclick="endShift()" class="btn-submit btn-danger">📷 فتح الكاميرا وإنهاء الوردية</button>
                 </div>
             </div>
 
-            <!-- قسم الدردشة والملاحظات المستقل -->
-            <div class="card" style="border-color: var(--accent-indigo);">
-                <div class="card-header"><span class="card-title" style="color:var(--accent-indigo);">💬 قسم الملاحظات والدردشة مع الإدارة</span></div>
-                <div id="driverChatBox" class="chat-box">
-                    <p style="text-align:center; color:var(--text-sub); margin:auto;">لا توجد رسائل سابقة.</p>
-                </div>
-                <div class="form-group" style="margin-bottom:8px;">
-                    <input type="text" id="driverNoteInput" placeholder="اكتب رسالة أو ملاحظة للإدارة..." class="form-control">
-                </div>
-                <button onclick="sendDriverNote()" class="btn-main" style="background-color:var(--accent-indigo); color:#fff;">إرسال رسالة</button>
-            </div>
-
-            <!-- أرشيف الساعات والأجور الشخصي -->
-            <div class="card" style="border-color: var(--accent-green);">
-                <div class="card-header"><span class="card-title" style="color:var(--accent-green);">📂 أرشيف الساعات والأجور (الأسبوع الحالي)</span></div>
-                <div id="driverArchiveBox" class="archive-box">
-                    <div class="archive-row"><span>إجمالي ساعات العمل:</span><b id="archHours" style="color:var(--accent-amber);">0 ساعة</b></div>
-                    <div class="archive-row"><span>قيمة الأجر الإجمالي:</span><b id="archSalary" style="color:var(--accent-green);">0 ل.س</b></div>
-                    <div class="archive-row"><span>إجمالي السلف والخصومات:</span><b id="archAdvances" style="color:var(--accent-red);">0 ل.س</b></div>
-                    <div class="archive-row" style="border-top:1px solid var(--border-color); margin-top:4px; padding-top:6px;"><span>حالة الراتب الأسبوعي:</span><b id="archStatus" style="color:var(--accent-amber);">بانتظار التقبيض</b></div>
-                </div>
-            </div>
-
-            <!-- طلب سلفة -->
+            <!-- طلب سلفة مالية -->
             <div class="card">
                 <div class="card-header"><span class="card-title">💵 طلب سلفة مالية</span></div>
                 <div class="form-group">
-                    <label>المبلغ المطلوب (ل.س):</label>
+                    <label>المبلغ المطلوب (ل.س)</label>
                     <input type="number" id="advanceAmountInput" placeholder="مثال: 50000" class="form-control">
                 </div>
-                <button onclick="requestAdvance()" class="btn-main" style="background-color: var(--accent-indigo); color:#fff;">إرسال طلب السلفة للإدارة</button>
+                <button onclick="requestAdvance()" class="btn-submit">إرسال طلب السلفة للإدارة</button>
+            </div>
+
+            <!-- الدردشة وملاحظات الإدارة -->
+            <div class="card">
+                <div class="card-header"><span class="card-title">💬 الدردشة والملاحظات مع الإدارة</span></div>
+                <div id="driverChatBox" class="chat-box"></div>
+                <div class="form-group" style="margin-bottom:0; display:flex; gap:6px; margin-top:6px;">
+                    <input type="text" id="driverChatInput" placeholder="اكتب رسالتك للإدارة..." class="form-control" style="margin-bottom:0;">
+                    <button onclick="sendDriverNote()" class="btn-submit" style="width:auto; margin:0; padding:10px 14px;">إرسال</button>
+                </div>
             </div>
         </div>
     </main>
 
-    <!-- Firebase Compat SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script>
@@ -179,19 +128,61 @@
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        let HOURLY_RATE = 8500;
 
-        db.ref('settings/hourlyRate').on('value', (snapshot) => {
-            if (snapshot.exists()) HOURLY_RATE = Number(snapshot.val()) || 8500;
-            if (currentDriver) checkDriverStatus();
+        let currentDriver = JSON.parse(localStorage.getItem('mt_current_driver')) || null;
+        let allCarsData = [];
+        let activeShiftsData = {};
+
+        db.ref('cars').on('value', (snapshot) => {
+            allCarsData = snapshot.val() ? Object.values(snapshot.val()) : [];
+            updateDriverSelectOptions();
+            if (currentDriver) verifyDriverSession();
         });
 
-        let currentDriver = localStorage.getItem('mt_driver_name') || null;
-        let currentCarId = localStorage.getItem('mt_driver_car_id') || null;
-        let activeCarsData = [];
-        let base64StartImg = "";
-        let base64EndImg = "";
-        let timerInterval = null;
+        db.ref('activeShifts').on('value', (snapshot) => {
+            activeShiftsData = snapshot.val() || {};
+            if (currentDriver) updateShiftUIState();
+        });
+
+        function updateDriverSelectOptions() {
+            const select = document.getElementById('loginDriverSelect');
+            if (!select) return;
+            let driversList = [];
+            allCarsData.forEach(c => {
+                if (c.dayDriver?.name?.trim()) driversList.push({ name: c.dayDriver.name, car: c.plate, shift: 'نهاري', carId: c.id });
+                if (c.nightDriver?.name?.trim()) driversList.push({ name: c.nightDriver.name, car: c.plate, shift: 'ليلي', carId: c.id });
+            });
+            select.innerHTML = `<option value="">اختر اسمك...</option>` + driversList.map(d => `<option value="${d.name}|${d.car}|${d.shift}|${d.carId}">${d.name} (${d.car} - ${d.shift})</option>`).join('');
+        }
+
+        function loginDriver() {
+            const val = document.getElementById('loginDriverSelect').value;
+            if (!val) { alert("الرجاء اختيار اسمك."); return; }
+            const parts = val.split('|');
+            currentDriver = { name: parts[0], car: parts[1], shift: parts[2], carId: Number(parts[3]) };
+            localStorage.setItem('mt_current_driver', JSON.stringify(currentDriver));
+            verifyDriverSession();
+        }
+
+        function verifyDriverSession() {
+            if (!currentDriver) return;
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('driverDashboard').classList.remove('hidden');
+            document.getElementById('logoutBtn').classList.remove('hidden');
+            document.getElementById('welcomeDriverName').innerText = currentDriver.name;
+            document.getElementById('driverCarInfo').innerText = `السيارة: ${currentDriver.car} (${currentDriver.shift})`;
+            
+            updateShiftUIState();
+            loadDriverChat();
+        }
+
+        function logoutDriver() {
+            localStorage.removeItem('mt_current_driver');
+            currentDriver = null;
+            document.getElementById('driverDashboard').classList.add('hidden');
+            document.getElementById('logoutBtn').classList.add('hidden');
+            document.getElementById('loginSection').classList.remove('hidden');
+        }
 
         function getSaturdayWeekId(dateObj = new Date()) {
             const d = new Date(dateObj);
@@ -201,252 +192,152 @@
             return `${d.getFullYear()}-W_Sat_${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         }
 
-        db.ref('cars').on('value', (snapshot) => {
-            activeCarsData = snapshot.val() ? Object.values(snapshot.val()) : [];
-            populateDriverSelect();
-            if (currentDriver) {
-                let exists = false;
-                activeCarsData.forEach(car => {
-                    if ((car.dayDriver?.name === currentDriver && car.id == currentCarId) ||
-                        (car.nightDriver?.name === currentDriver && car.id == currentCarId)) {
-                        exists = true;
-                    }
-                });
-                if (!exists && currentDriver) {
-                    driverLogout();
-                    return;
-                }
-                checkDriverStatus();
-            }
-        });
-
-        function populateDriverSelect() {
-            const select = document.getElementById('driverSelect');
-            if (!select) return;
-            let options = '<option value="">اختر اسمك...</option>';
-            activeCarsData.forEach(car => {
-                if (car.dayDriver?.name?.trim()) {
-                    options += `<option value="${car.dayDriver.name}" data-carid="${car.id}">☀️ ${car.dayDriver.name} (${car.plate})</option>`;
-                }
-                if (car.nightDriver?.name?.trim()) {
-                    options += `<option value="${car.nightDriver.name}" data-carid="${car.id}">🌙 ${car.nightDriver.name} (${car.plate})</option>`;
-                }
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
             });
-            select.innerHTML = options;
         }
 
-        function driverLogin() {
-            const select = document.getElementById('driverSelect');
-            const selectedOpt = select.options[select.selectedIndex];
-            if (!select.value) {
-                alert("الرجاء اختيار اسمك من القائمة.");
+        async function startShift() {
+            const fileInput = document.getElementById('startOdoFile');
+            let imgBase64 = "";
+            if (fileInput.files && fileInput.files[0]) {
+                imgBase64 = await fileToBase64(fileInput.files[0]);
+            } else {
+                alert("⚠️ يرجى تصوير العداد من الكاميرا أولاً.");
                 return;
             }
-            currentDriver = select.value;
-            currentCarId = selectedOpt.getAttribute('data-carid');
 
-            localStorage.setItem('mt_driver_name', currentDriver);
-            localStorage.setItem('mt_driver_car_id', currentCarId);
-            checkDriverStatus();
-        }
-
-        function driverLogout() {
-            localStorage.removeItem('mt_driver_name');
-            localStorage.removeItem('mt_driver_car_id');
-            currentDriver = null;
-            currentCarId = null;
-            clearInterval(timerInterval);
-            document.getElementById('loginSection').style.display = 'block';
-            document.getElementById('dashboardSection').style.display = 'none';
-        }
-
-        if (currentDriver) {
-            document.getElementById('loginSection').style.display = 'none';
-            document.getElementById('dashboardSection').style.display = 'block';
-        }
-
-        function checkDriverStatus() {
-            if (!currentDriver || !currentCarId) return;
-            document.getElementById('loginSection').style.display = 'none';
-            document.getElementById('dashboardSection').style.display = 'block';
-            document.getElementById('driverWelcomeTitle').innerText = `أهلاً، ${currentDriver}`;
-
-            db.ref(`activeShifts/${currentCarId}`).on('value', (snapshot) => {
-                const shift = snapshot.val();
-                if (shift && shift.driver === currentDriver) {
-                    document.getElementById('offDutyControls').style.display = 'none';
-                    document.getElementById('onDutyControls').style.display = 'block';
-                    startLiveTimer(shift.timestamp);
-                } else {
-                    document.getElementById('offDutyControls').style.display = 'block';
-                    document.getElementById('onDutyControls').style.display = 'none';
-                    clearInterval(timerInterval);
-                }
-            });
-
+            const timestamp = Date.now();
             const weekId = getSaturdayWeekId();
-            db.ref(`weeklyRecords/${weekId}/${currentDriver}`).on('value', (snapshot) => {
-                const rec = snapshot.val() || { hours: 0, advances: 0, rewards: 0, paid: false };
-                const salary = (rec.hours || 0) * HOURLY_RATE;
-                const rewards = rec.rewards || 0;
-                const advances = rec.advances || 0;
-                const net = salary + rewards - advances;
+            const dateKey = new Date().toISOString().split('T')[0];
 
-                document.getElementById('mySalary').innerText = `${Math.round(salary).toLocaleString()} ل.س`;
-                document.getElementById('myRewards').innerText = `${rewards.toLocaleString()} ل.س`;
-                document.getElementById('myAdvances').innerText = `${advances.toLocaleString()} ل.س`;
-                document.getElementById('myNet').innerText = `${Math.round(net).toLocaleString()} ل.س`;
-
-                document.getElementById('archHours').innerText = `${(rec.hours || 0).toFixed(1)} ساعة`;
-                document.getElementById('archSalary').innerText = `${Math.round(salary).toLocaleString()} ل.س`;
-                document.getElementById('archAdvances').innerText = `${advances.toLocaleString()} ل.س`;
-                document.getElementById('archStatus').innerText = rec.paid ? '✅ تم التقبيض بنجاح' : '⏳ بانتظار الاعتماد والتقبيض';
-                document.getElementById('archStatus').style.color = rec.paid ? 'var(--accent-green)' : 'var(--accent-amber)';
-            });
-
-            // الاستماع للرسائل وعرضها بشكل فقاعات دردشة
-            db.ref(`notes/${currentDriver}`).on('value', (snapshot) => {
-                const notesObj = snapshot.val() || {};
-                const chatBoxEl = document.getElementById('driverChatBox');
-                const notesArr = Object.values(notesObj);
-
-                if (notesArr.length === 0) {
-                    chatBoxEl.innerHTML = `<p style="text-align:center; color:var(--text-sub); margin:auto;">لا توجد رسائل سابقة.</p>`;
-                    return;
-                }
-
-                chatBoxEl.innerHTML = notesArr.map(n => {
-                    const isAdmin = n.sender === 'الإدارة';
-                    return `
-                        <div class="chat-bubble ${isAdmin ? 'admin' : 'driver'}">
-                            <span class="sender-name">${n.sender}</span>
-                            <p>${n.text}</p>
-                        </div>
-                    `;
-                }).join('');
-                chatBoxEl.scrollTop = chatBoxEl.scrollHeight;
-            });
-        }
-
-        function sendDriverNote() {
-            const text = document.getElementById('driverNoteInput').value.trim();
-            if (!text) return;
-            const noteData = { sender: currentDriver, text: text, timestamp: Date.now() };
-            db.ref(`notes/${currentDriver}`).push(noteData).then(() => {
-                document.getElementById('driverNoteInput').value = "";
-            });
-        }
-
-        function handleImageUpload(input, type) {
-            const file = input.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 800;
-                    const scaleSize = img.width > MAX_WIDTH ? (MAX_WIDTH / img.width) : 1;
-                    canvas.width = img.width * scaleSize;
-                    canvas.height = img.height * scaleSize;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
-
-                    if (type === 'start') {
-                        base64StartImg = compressedBase64;
-                        document.getElementById('startImgText').innerText = "✅ تم التقاط صورة البداية بنجاح";
-                        document.getElementById('startImgBox').style.borderColor = "var(--accent-green)";
-                    } else {
-                        base64EndImg = compressedBase64;
-                        document.getElementById('endImgText').innerText = "✅ تم التقاط صورة النهاية بنجاح";
-                        document.getElementById('endImgBox').style.borderColor = "var(--accent-green)";
-                    }
-                }
-                img.src = e.target.result;
-            }
-            reader.readAsDataURL(file);
-        }
-
-        function startShift() {
-            const odo = Number(document.getElementById('startOdometerInput').value);
-            if (!odo) { alert("الرجاء إدخال رقم عداد البداية."); return; }
-
-            const startTime = Date.now();
-            const todayKey = new Date().toISOString().split('T')[0];
-            const weekId = getSaturdayWeekId();
-
-            const shiftData = { driver: currentDriver, timestamp: startTime, odoStart: odo, odoStartImg: base64StartImg || "" };
+            const shiftData = { driver: currentDriver.name, car: currentDriver.car, timestamp: timestamp };
+            
             const updates = {};
-            updates[`activeShifts/${currentCarId}`] = shiftData;
-            updates[`weeklyRecords/${weekId}/${currentDriver}/odoStart`] = odo;
-            updates[`weeklyRecords/${weekId}/${currentDriver}/odoStartImg`] = base64StartImg || "";
-            updates[`weeklyRecords/${weekId}/${currentDriver}/imgTimestamp`] = startTime;
-            updates[`weeklyRecords/${weekId}/${currentDriver}/days/${todayKey}/startTime`] = startTime;
-            updates[`weeklyRecords/${weekId}/${currentDriver}/days/${todayKey}/status`] = 'present';
+            updates[`activeShifts/${currentDriver.carId}`] = shiftData;
+            updates[`weeklyRecords/${weekId}/${currentDriver.name}/odoStartImg`] = imgBase64;
+            updates[`weeklyRecords/${weekId}/${currentDriver.name}/odoStartTimestamp`] = timestamp;
+            updates[`weeklyRecords/${weekId}/${currentDriver.name}/days/${dateKey}/startTime`] = timestamp;
+            updates[`weeklyRecords/${weekId}/${currentDriver.name}/days/${dateKey}/status`] = 'present';
 
-            db.ref().update(updates).then(() => { alert("🟢 تم بدء الوردية بنجاح!"); });
+            db.ref().update(updates).then(() => {
+                alert("✅ تم التقاط الصورة وبدء الوردية بنجاح!");
+                fileInput.value = "";
+                updateShiftUIState();
+            });
         }
 
-        function endShift() {
-            const odoEnd = Number(document.getElementById('endOdometerInput').value);
-            if (!odoEnd) { alert("الرجاء إدخال رقم عداد النهاية."); return; }
+        async function endShift() {
+            const fileInput = document.getElementById('endOdoFile');
+            let imgBase64 = "";
+            if (fileInput.files && fileInput.files[0]) {
+                imgBase64 = await fileToBase64(fileInput.files[0]);
+            } else {
+                alert("⚠️ يرجى تصوير العداد من الكاميرا أولاً.");
+                return;
+            }
 
-            db.ref(`activeShifts/${currentCarId}`).once('value', (snapshot) => {
-                const shift = snapshot.val();
-                if (!shift) return;
+            const shiftData = activeShiftsData[currentDriver.carId];
+            if (!shiftData) return;
 
-                const endTime = Date.now();
-                const elapsedSecs = Math.max(0, Math.floor((endTime - shift.timestamp) / 1000));
-                const elapsedHours = elapsedSecs / 3600;
-                const weekId = getSaturdayWeekId();
-                const todayKey = new Date().toISOString().split('T')[0];
+            const endTime = Date.now();
+            const elapsedHours = Math.max(0, (endTime - shiftData.timestamp) / 1000) / 3600;
+            const weekId = getSaturdayWeekId();
+            const dateKey = new Date().toISOString().split('T')[0];
 
-                db.ref(`weeklyRecords/${weekId}/${currentDriver}`).once('value', (recSnap) => {
-                    const rec = recSnap.val() || { hours: 0 };
-                    const newTotalHours = (rec.hours || 0) + elapsedHours;
-                    const newTodayHours = ((rec.days && rec.days[todayKey] && rec.days[todayKey].hours) || 0) + elapsedHours;
+            db.ref(`weeklyRecords/${weekId}/${currentDriver.name}/hours`).once('value', (snapshot) => {
+                const currentHours = Number(snapshot.val()) || 0;
+                const newTotalHours = currentHours + elapsedHours;
 
-                    const updates = {};
-                    updates[`activeShifts/${currentCarId}`] = null;
-                    updates[`weeklyRecords/${weekId}/${currentDriver}/hours`] = newTotalHours;
-                    updates[`weeklyRecords/${weekId}/${currentDriver}/odoEnd`] = odoEnd;
-                    updates[`weeklyRecords/${weekId}/${currentDriver}/odoEndImg`] = base64EndImg || "";
-                    updates[`weeklyRecords/${weekId}/${currentDriver}/days/${todayKey}/endTime`] = endTime;
-                    updates[`weeklyRecords/${weekId}/${currentDriver}/days/${todayKey}/hours`] = newTodayHours;
-                    updates[`weeklyRecords/${weekId}/${currentDriver}/days/${todayKey}/status`] = 'present';
+                const updates = {};
+                updates[`activeShifts/${currentDriver.carId}`] = null;
+                updates[`weeklyRecords/${weekId}/${currentDriver.name}/hours`] = newTotalHours;
+                updates[`weeklyRecords/${weekId}/${currentDriver.name}/odoEndImg`] = imgBase64;
+                updates[`weeklyRecords/${weekId}/${currentDriver.name}/odoEndTimestamp`] = endTime;
+                updates[`weeklyRecords/${weekId}/${currentDriver.name}/days/${dateKey}/endTime`] = endTime;
 
-                    db.ref().update(updates).then(() => {
-                        alert("✅ تم إنهاء الوردية وحفظ الساعات والعداد بنجاح!");
-                        location.reload();
-                    });
+                db.ref().update(updates).then(() => {
+                    alert("✅ تم إنهاء الوردية بنجاح وحساب الساعات!");
+                    fileInput.value = "";
+                    updateShiftUIState();
                 });
             });
         }
 
-        function startLiveTimer(startTime) {
-            clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                const diffSecs = Math.max(0, Math.floor((Date.now() - startTime) / 1000));
-                const h = Math.floor(diffSecs / 3600);
-                const m = Math.floor((diffSecs % 3600) / 60);
-                const s = diffSecs % 60;
-                const timerEl = document.getElementById('liveTimer');
-                if (timerEl) timerEl.innerText = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-            }, 1000);
+        function updateShiftUIState() {
+            if (!currentDriver) return;
+            const shift = activeShiftsData[currentDriver.carId];
+            
+            // التحقق الدقيق مما إذا كانت الوردية النشطة تخص هذا السائق بالذات
+            const isMyShiftActive = shift && (shift.driver === currentDriver.name);
+
+            const startControls = document.getElementById('startShiftControls');
+            const endControls = document.getElementById('endShiftControls');
+            const badge = document.getElementById('shiftStatusBadge');
+
+            if (isMyShiftActive) {
+                startControls.classList.add('hidden');
+                endControls.classList.remove('hidden');
+                badge.innerText = "🟢 في وردية نشطة";
+                badge.style.background = "rgba(16, 185, 129, 0.2)";
+                badge.style.color = "var(--accent-green)";
+            } else {
+                startControls.classList.remove('hidden');
+                endControls.classList.add('hidden');
+                badge.innerText = "⚪ في الاستراحة";
+                badge.style.background = "rgba(148, 163, 184, 0.1)";
+                badge.style.color = "var(--text-sub)";
+            }
         }
 
         function requestAdvance() {
             const amount = Number(document.getElementById('advanceAmountInput').value);
-            if (!amount || amount <= 0) { alert("الرجاء إدخال مبلغ صحيح للسلفة."); return; }
+            if (!amount || amount <= 0) { alert("أدخل مبلغاً صحيحاً."); return; }
 
             const weekId = getSaturdayWeekId();
-            db.ref(`weeklyRecords/${weekId}/${currentDriver}/advances`).once('value', (snapshot) => {
-                const currentAdv = snapshot.val() || 0;
-                db.ref(`weeklyRecords/${weekId}/${currentDriver}/advances`).set(currentAdv + amount).then(() => {
-                    alert("✅ تم إرسال طلب السلفة إلى الإدارة بنجاح بانتظار الاعتماد.");
+            db.ref(`weeklyRecords/${weekId}/${currentDriver.name}/advances`).once('value', (snapshot) => {
+                const currentAdv = Number(snapshot.val()) || 0;
+                db.ref(`weeklyRecords/${weekId}/${currentDriver.name}/advances`).set(currentAdv + amount).then(() => {
+                    alert("✅ تم إرسال طلب السلفة بنجاح للإدارة.");
                     document.getElementById('advanceAmountInput').value = "";
                 });
+            });
+        }
+
+        function loadDriverChat() {
+            if (!currentDriver) return;
+            db.ref(`notes/${currentDriver.name}`).on('value', (snapshot) => {
+                const chatBox = document.getElementById('driverChatBox');
+                const data = snapshot.val() || {};
+                const msgs = Object.values(data);
+                if (msgs.length === 0) {
+                    chatBox.innerHTML = `<p style="color:var(--text-sub); text-align:center; padding-top:40px;">لا توجد رسائل سابقة.</p>`;
+                    return;
+                }
+                chatBox.innerHTML = msgs.map(m => `
+                    <div class="chat-msg ${m.sender === 'الإدارة' ? 'admin' : ''}">
+                        <b>${m.sender}:</b> ${m.text}
+                    </div>
+                `).join('');
+                chatBox.scrollTop = chatBox.scrollHeight;
+            });
+        }
+
+        function sendDriverNote() {
+            const input = document.getElementById('driverChatInput');
+            const text = input.value.trim();
+            if (!text || !currentDriver) return;
+
+            db.ref(`notes/${currentDriver.name}`).push({
+                sender: currentDriver.name,
+                text: text,
+                timestamp: Date.now()
+            }).then(() => {
+                input.value = "";
             });
         }
     </script>
