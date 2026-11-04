@@ -28,7 +28,25 @@
         .btn-submit { width: 100%; background-color: var(--accent-amber); color: #000; border: none; padding: 11px; border-radius: 10px; font-weight: 800; font-size: 12px; cursor: pointer; margin-top: 4px; }
         .btn-danger { background-color: var(--accent-red); color: #fff; }
         .btn-green { background-color: var(--accent-green); color: #000; }
-        .driver-info-box { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; margin-bottom: 12px; font-size: 11px; display: flex; justify-content: space-between; align-items: center; }
+        
+        /* بطاقة معلومات السائق */
+        .driver-profile-card { background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95)); border: 1px solid var(--accent-amber); border-radius: 16px; padding: 14px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .profile-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
+        .profile-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 11px; }
+        .profile-item { background: rgba(15, 23, 42, 0.6); padding: 8px; border-radius: 8px; border: 1px solid var(--border-color); }
+        .profile-item span { color: var(--text-sub); display: block; font-size: 9px; margin-bottom: 2px; }
+        .profile-item b { color: var(--text-main); font-size: 11px; }
+
+        /* عداد الساعات المباشر */
+        .live-timer-card { background: rgba(16, 185, 129, 0.1); border: 1px solid var(--accent-green); border-radius: 14px; padding: 12px; text-align: center; margin-bottom: 12px; }
+        .live-timer-display { font-family: monospace; font-size: 22px; font-weight: 800; color: var(--accent-green); margin-top: 4px; }
+
+        /* بطاقة الإحصائيات والأجور والسلف الأسبوعية المضافة */
+        .weekly-stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 12px; text-align: center; }
+        .w-stat-box { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 10px 6px; }
+        .w-stat-box p { font-size: 9px; color: var(--text-sub); margin-bottom: 2px; }
+        .w-stat-box h4 { font-size: 11px; font-weight: 800; }
+
         .chat-box { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-color); border-radius: 10px; padding: 8px; height: 120px; overflow-y: auto; margin-bottom: 8px; font-size: 10px; }
         .chat-msg { margin-bottom: 6px; padding: 4px 8px; border-radius: 6px; background: rgba(51, 65, 85, 0.4); }
         .chat-msg.admin { background: rgba(99, 102, 241, 0.2); border-right: 2px solid var(--accent-indigo); }
@@ -61,12 +79,52 @@
 
         <!-- الشاشة الرئيسية للسائق -->
         <div id="driverDashboard" class="hidden">
-            <div class="driver-info-box">
-                <div>
-                    <span id="welcomeDriverName" style="font-weight:800; color:var(--accent-amber); font-size:13px;"></span>
-                    <p id="driverCarInfo" style="color:var(--text-sub); margin-top:2px;"></p>
+            
+            <!-- بطاقة معلومات السائق -->
+            <div class="driver-profile-card">
+                <div class="profile-header">
+                    <div>
+                        <span style="font-size: 9px; color: var(--accent-amber); font-weight: 700;">بطاقة السائق المعتمدة</span>
+                        <h3 id="profileDriverName" style="font-size: 15px; font-weight: 800; color: #fff; margin-top: 2px;">--</h3>
+                    </div>
+                    <span id="shiftStatusBadge" style="font-size:9px; font-weight:700; padding:4px 10px; border-radius:8px; background:rgba(148,163,184,0.1); color:var(--text-sub);">في الاستراحة</span>
                 </div>
-                <span id="shiftStatusBadge" style="font-size:9px; font-weight:700; padding:3px 8px; border-radius:6px; background:rgba(148,163,184,0.1); color:var(--text-sub);">في الاستراحة</span>
+                <div class="profile-info-grid">
+                    <div class="profile-item">
+                        <span>السيارة ورقم اللوحة</span>
+                        <b id="profileCarInfo">--</b>
+                    </div>
+                    <div class="profile-item">
+                        <span>نوع الشفت (الوردية)</span>
+                        <b id="profileShiftType" style="color: var(--accent-amber);">--</b>
+                    </div>
+                    <div class="profile-item" style="grid-column: span 2;">
+                        <span>رقم الهاتف المسجل</span>
+                        <b id="profilePhone">--</b>
+                    </div>
+                </div>
+            </div>
+
+            <!-- إحصائيات الأسبوع (ساعات الأسبوع، إجمالي الأجر، السلف) -->
+            <div class="weekly-stats-grid">
+                <div class="w-stat-box">
+                    <p>ساعات الأسبوع</p>
+                    <h4 id="statWeekHours" style="color: var(--accent-amber);">0.0 س</h4>
+                </div>
+                <div class="w-stat-box">
+                    <p>إجمالي الأجر</p>
+                    <h4 id="statTotalSalary" style="color: var(--accent-green);">0 ل.س</h4>
+                </div>
+                <div class="w-stat-box">
+                    <p>إجمالي السلف</p>
+                    <h4 id="statTotalAdvances" style="color: var(--accent-red);">0 ل.س</h4>
+                </div>
+            </div>
+
+            <!-- عداد الساعات المباشر أثناء الوردية -->
+            <div id="liveTimerCard" class="live-timer-card hidden">
+                <span style="font-size: 11px; font-weight: 700; color: var(--text-sub);">⏱️ عداد الساعات المباشر للوردية الحالية</span>
+                <div id="driverLiveTimer" class="live-timer-display">00:00:00</div>
             </div>
 
             <!-- لوحة التحكم بالوردية -->
@@ -82,7 +140,6 @@
                 </div>
 
                 <div id="endShiftControls" class="hidden">
-                    <p style="font-size:11px; color:var(--accent-green); margin-bottom:8px; font-weight:bold;" id="activeShiftTimerText">الوردية قيد العمل...</p>
                     <div class="form-group">
                         <label>📸 تصوير عداد النهاية (الكاميرا مباشرة):</label>
                         <input type="file" id="endOdoFile" accept="image/*" capture="environment" class="form-control">
@@ -132,6 +189,14 @@
         let currentDriver = JSON.parse(localStorage.getItem('mt_current_driver')) || null;
         let allCarsData = [];
         let activeShiftsData = {};
+        let HOURLY_RATE = 8500;
+        let timerInterval = null;
+
+        // جلب أجر الساعة المحدث من قاعدة البيانات
+        db.ref('settings/hourlyRate').on('value', (snapshot) => {
+            if (snapshot.exists()) HOURLY_RATE = Number(snapshot.val()) || 8500;
+            if (currentDriver) updateDriverFinancialStats();
+        });
 
         db.ref('cars').on('value', (snapshot) => {
             allCarsData = snapshot.val() ? Object.values(snapshot.val()) : [];
@@ -144,22 +209,32 @@
             if (currentDriver) updateShiftUIState();
         });
 
+        // الاستماع المستمر لتحديثات السجلات الأسبوعية للسائق (الساعات والسلف)
+        function listenToDriverWeeklyRecords() {
+            if (!currentDriver) return;
+            const weekId = getSaturdayWeekId();
+            db.ref(`weeklyRecords/${weekId}/${currentDriver.name}`).on('value', (snapshot) => {
+                window.currentDriverRecord = snapshot.val() || { hours: 0, advances: 0 };
+                updateDriverFinancialStats();
+            });
+        }
+
         function updateDriverSelectOptions() {
             const select = document.getElementById('loginDriverSelect');
             if (!select) return;
             let driversList = [];
             allCarsData.forEach(c => {
-                if (c.dayDriver?.name?.trim()) driversList.push({ name: c.dayDriver.name, car: c.plate, shift: 'نهاري', carId: c.id });
-                if (c.nightDriver?.name?.trim()) driversList.push({ name: c.nightDriver.name, car: c.plate, shift: 'ليلي', carId: c.id });
+                if (c.dayDriver?.name?.trim()) driversList.push({ name: c.dayDriver.name, phone: c.dayDriver.phone || 'غير متوفر', car: c.plate, shift: 'نهاري', carId: c.id });
+                if (c.nightDriver?.name?.trim()) driversList.push({ name: c.nightDriver.name, phone: c.nightDriver.phone || 'غير متوفر', car: c.plate, shift: 'ليلي', carId: c.id });
             });
-            select.innerHTML = `<option value="">اختر اسمك...</option>` + driversList.map(d => `<option value="${d.name}|${d.car}|${d.shift}|${d.carId}">${d.name} (${d.car} - ${d.shift})</option>`).join('');
+            select.innerHTML = `<option value="">اختر اسمك...</option>` + driversList.map(d => `<option value="${d.name}|${d.car}|${d.shift}|${d.carId}|${d.phone}">${d.name} (${d.car} - ${d.shift})</option>`).join('');
         }
 
         function loginDriver() {
             const val = document.getElementById('loginDriverSelect').value;
             if (!val) { alert("الرجاء اختيار اسمك."); return; }
             const parts = val.split('|');
-            currentDriver = { name: parts[0], car: parts[1], shift: parts[2], carId: Number(parts[3]) };
+            currentDriver = { name: parts[0], car: parts[1], shift: parts[2], carId: Number(parts[3]), phone: parts[4] };
             localStorage.setItem('mt_current_driver', JSON.stringify(currentDriver));
             verifyDriverSession();
         }
@@ -169,9 +244,13 @@
             document.getElementById('loginSection').classList.add('hidden');
             document.getElementById('driverDashboard').classList.remove('hidden');
             document.getElementById('logoutBtn').classList.remove('hidden');
-            document.getElementById('welcomeDriverName').innerText = currentDriver.name;
-            document.getElementById('driverCarInfo').innerText = `السيارة: ${currentDriver.car} (${currentDriver.shift})`;
             
+            document.getElementById('profileDriverName').innerText = currentDriver.name;
+            document.getElementById('profileCarInfo').innerText = currentDriver.car;
+            document.getElementById('profileShiftType').innerText = currentDriver.shift;
+            document.getElementById('profilePhone').innerText = currentDriver.phone;
+            
+            listenToDriverWeeklyRecords();
             updateShiftUIState();
             loadDriverChat();
         }
@@ -179,6 +258,7 @@
         function logoutDriver() {
             localStorage.removeItem('mt_current_driver');
             currentDriver = null;
+            if (timerInterval) clearInterval(timerInterval);
             document.getElementById('driverDashboard').classList.add('hidden');
             document.getElementById('logoutBtn').classList.add('hidden');
             document.getElementById('loginSection').classList.remove('hidden');
@@ -271,27 +351,62 @@
         function updateShiftUIState() {
             if (!currentDriver) return;
             const shift = activeShiftsData[currentDriver.carId];
-            
-            // التحقق الدقيق مما إذا كانت الوردية النشطة تخص هذا السائق بالذات
             const isMyShiftActive = shift && (shift.driver === currentDriver.name);
 
             const startControls = document.getElementById('startShiftControls');
             const endControls = document.getElementById('endShiftControls');
             const badge = document.getElementById('shiftStatusBadge');
+            const liveTimerCard = document.getElementById('liveTimerCard');
 
             if (isMyShiftActive) {
                 startControls.classList.add('hidden');
                 endControls.classList.remove('hidden');
+                liveTimerCard.classList.remove('hidden');
                 badge.innerText = "🟢 في وردية نشطة";
                 badge.style.background = "rgba(16, 185, 129, 0.2)";
                 badge.style.color = "var(--accent-green)";
+
+                if (!timerInterval) {
+                    const startTime = shift.timestamp;
+                    timerInterval = setInterval(() => {
+                        const diffSecs = Math.max(0, Math.floor((Date.now() - startTime) / 1000));
+                        const h = Math.floor(diffSecs / 3600);
+                        const m = Math.floor((diffSecs % 3600) / 60);
+                        const s = diffSecs % 60;
+                        document.getElementById('driverLiveTimer').innerText = 
+                            `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                        
+                        // تحديث الأجور وساعات الأسبوع بشكل حي أثناء العمل
+                        updateDriverFinancialStats(diffSecs / 3600);
+                    }, 1000);
+                }
             } else {
                 startControls.classList.remove('hidden');
                 endControls.classList.add('hidden');
+                liveTimerCard.classList.add('hidden');
                 badge.innerText = "⚪ في الاستراحة";
                 badge.style.background = "rgba(148, 163, 184, 0.1)";
                 badge.style.color = "var(--text-sub)";
+
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+                updateDriverFinancialStats(0);
             }
+        }
+
+        function updateDriverFinancialStats(liveActiveHours = 0) {
+            if (!currentDriver) return;
+            const rec = window.currentDriverRecord || { hours: 0, advances: 0 };
+            const baseHours = rec.hours || 0;
+            const totalWeekHours = baseHours + liveActiveHours;
+            const totalSalary = totalWeekHours * HOURLY_RATE;
+            const totalAdvances = rec.advances || 0;
+
+            document.getElementById('statWeekHours').innerText = `${totalWeekHours.toFixed(1)} س`;
+            document.getElementById('statTotalSalary').innerText = `${Math.round(totalSalary).toLocaleString()} ل.س`;
+            document.getElementById('statTotalAdvances').innerText = `${totalAdvances.toLocaleString()} ل.س`;
         }
 
         function requestAdvance() {
