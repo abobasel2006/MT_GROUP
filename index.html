@@ -248,13 +248,11 @@
                 return;
             }
 
-            // البحث المرن عن السيارة للتأكد من وجودها حتى لو اختلفت المسافات
             let targetCar = allCarsData.find(c => c.plate.trim() === currentDriver.car.trim());
             if (!targetCar) {
                 targetCar = { id: Date.now(), plate: currentDriver.car };
             }
 
-            // فحص الشفت المزدوج والبدء المباشر
             db.ref('activeShifts').once('value').then((snapshot) => {
                 const activeShifts = snapshot.val() || {};
                 let otherDriverOnDuty = false;
@@ -297,11 +295,18 @@
                 updates[`weeklyRecords/${weekId}/${currentDriver.name}/odoStartImg`] = uploadedStartImg;
                 updates[`weeklyRecords/${weekId}/${currentDriver.name}/odoStartTimestamp`] = startTime;
 
+                // التحديث الفوري المحلي للواجهة (إخفاء زر البدء وإظهار العداد فوراً دون انتظار خادم الإنترنت)
+                const startBox = document.getElementById('startShiftBox');
+                const activeBox = document.getElementById('activeShiftBox');
+                if (startBox) startBox.style.display = 'none';
+                if (activeBox) activeBox.style.display = 'block';
+                runLiveTimer(startTime);
+
+                // إرسال البيانات للسحاب في الخلفية
                 db.ref().update(updates).then(() => {
-                    alert("🟢 تم بدء الوردية وتسجيل العداد بنجاح!");
-                    checkActiveShiftState();
+                    console.log("تم حفظ بيانات الوردية بنجاح في السحاب.");
                 }).catch(err => {
-                    alert("حدث خطأ أثناء الاتصال بقاعدة البيانات: " + err.message);
+                    console.error("خطأ في المزامنة السحابية: " + err.message);
                 });
             });
         }
