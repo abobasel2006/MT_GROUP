@@ -33,9 +33,6 @@
         .file-upload-box input { display: none; }
         .file-upload-box p { font-size: 10px; color: var(--text-sub); }
         .timer-display { font-family: monospace; font-size: 20px; font-weight: 800; text-align: center; color: var(--accent-green); background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); padding: 10px; border-radius: 10px; margin-bottom: 10px; }
-        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.85); z-index: 100; align-items: center; justify-content: center; padding: 16px; }
-        .modal.active { display: flex; }
-        .modal-content { background-color: var(--card-bg); border: 1px solid var(--accent-amber); border-radius: 20px; padding: 16px; width: 100%; max-width: 400px; }
     </style>
 </head>
 <body>
@@ -217,29 +214,16 @@
             reader.readAsDataURL(file);
         }
 
-        // دالة التحقق ومعرفة سيارة السائق والزميل على نفس السيارة لتطبيق قفل الشفت المزدوج
         function checkActiveShiftState() {
             if (!currentDriver) return;
-            
-            // إيجاد سيارة السائق الحالي والزميل الذي معه على نفس السيارة
-            const targetCar = allCarsData.find(c => c.plate === currentDriver.car);
-            if (!targetCar) return;
-
-            const dayDrvName = targetCar.dayDriver?.name || "";
-            const nightDrvName = targetCar.nightDriver?.name || "";
-
             db.ref('activeShifts').once('value').then((snapshot) => {
                 const activeShifts = snapshot.val() || {};
                 let shiftData = null;
-                let activeOnCar = false;
 
                 Object.keys(activeShifts).forEach(carId => {
                     const shift = activeShifts[carId];
-                    if (shift && shift.car === currentDriver.car) {
-                        activeOnCar = true;
-                        if (shift.driver === currentDriver.name) {
-                            shiftData = shift;
-                        }
+                    if (shift && shift.driver === currentDriver.name) {
+                        shiftData = shift;
                     }
                 });
 
@@ -263,13 +247,13 @@
                 return;
             }
 
-            // التحقق قبل بدء الوردية: هل الزميل الآخر على نفس السيارة في وردية الآن؟
             const targetCar = allCarsData.find(c => c.plate === currentDriver.car);
             if (!targetCar) {
                 alert("لم يتم العثور على بيانات السيارة.");
                 return;
             }
 
+            // التحقق من قفل الوردية المزدوجة (منع تداخل الزميل على نفس السيارة)
             db.ref('activeShifts').once('value').then((snapshot) => {
                 const activeShifts = snapshot.val() || {};
                 let otherDriverOnDuty = false;
@@ -288,7 +272,6 @@
                     return;
                 }
 
-                // إذا كانت السيارة فارغة، قم ببدء الوردية بنجاح
                 const startTime = Date.now();
                 const weekId = getSaturdayWeekId();
                 const carIdObj = targetCar.id || Date.now();
