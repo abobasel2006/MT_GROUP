@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MT GROUP - بوابة السائقين</title>
+    <title>تطبيق السائقين - MT GROUP</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
         :root {
@@ -12,45 +12,30 @@
             --text-main: #f8fafc; --text-sub: #94a3b8; --border-color: #334155;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background-color: var(--bg-color); color: var(--text-main); padding-bottom: 30px; direction: rtl; }
-        header { background-color: rgba(30, 41, 59, 0.95); border-bottom: 1px solid rgba(245, 158, 11, 0.3); padding: 12px 16px; position: sticky; top: 0; z-index: 40; display: flex; justify-content: space-between; align-items: center; }
-        .logo-group { display: flex; align-items: center; gap: 10px; }
-        .logo-icon { background-color: var(--accent-amber); color: #000; width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 900; }
-        .header-title h1 { font-size: 14px; color: var(--accent-amber); font-weight: 800; }
+        body { background-color: var(--bg-color); color: var(--text-main); padding: 12px; max-width: 480px; margin: 0 auto; direction: rtl; }
+        header { background-color: var(--card-bg); border: 1px solid var(--border-color); padding: 12px; border-radius: 14px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .logo-group { display: flex; align-items: center; gap: 8px; }
+        .logo-icon { background-color: var(--accent-amber); color: #000; width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 900; }
+        .header-title h1 { font-size: 13px; color: var(--accent-amber); font-weight: 800; }
         .header-title p { font-size: 9px; color: var(--text-sub); }
-        main { max-width: 480px; margin: 0 auto; padding: 12px 16px; }
         .card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 14px; margin-bottom: 12px; }
-        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .card-title { font-size: 13px; font-weight: 800; color: var(--accent-amber); }
+        .card-header { font-size: 12px; font-weight: 800; color: var(--accent-amber); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
         .form-group { margin-bottom: 10px; }
         .form-group label { display: block; font-size: 11px; color: var(--text-sub); margin-bottom: 4px; font-weight: 600; }
         .form-control { width: 100%; background-color: #0f172a; border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 10px; font-size: 12px; outline: none; }
         .btn-submit { width: 100%; background-color: var(--accent-amber); color: #000; border: none; padding: 11px; border-radius: 10px; font-weight: 800; font-size: 12px; cursor: pointer; margin-top: 4px; }
         .btn-danger { background-color: var(--accent-red); color: #fff; }
-        .btn-green { background-color: var(--accent-green); color: #000; }
-        
-        /* بطاقة معلومات السائق */
-        .driver-profile-card { background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95)); border: 1px solid var(--accent-amber); border-radius: 16px; padding: 14px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
-        .profile-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
-        .profile-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 11px; }
-        .profile-item { background: rgba(15, 23, 42, 0.6); padding: 8px; border-radius: 8px; border: 1px solid var(--border-color); }
-        .profile-item span { color: var(--text-sub); display: block; font-size: 9px; margin-bottom: 2px; }
-        .profile-item b { color: var(--text-main); font-size: 11px; }
-
-        /* عداد الساعات المباشر */
-        .live-timer-card { background: rgba(16, 185, 129, 0.1); border: 1px solid var(--accent-green); border-radius: 14px; padding: 12px; text-align: center; margin-bottom: 12px; }
-        .live-timer-display { font-family: monospace; font-size: 22px; font-weight: 800; color: var(--accent-green); margin-top: 4px; }
-
-        /* بطاقة الإحصائيات والأجور والسلف الأسبوعية المضافة */
-        .weekly-stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 12px; text-align: center; }
-        .w-stat-box { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 10px 6px; }
-        .w-stat-box p { font-size: 9px; color: var(--text-sub); margin-bottom: 2px; }
-        .w-stat-box h4 { font-size: 11px; font-weight: 800; }
-
-        .chat-box { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-color); border-radius: 10px; padding: 8px; height: 120px; overflow-y: auto; margin-bottom: 8px; font-size: 10px; }
-        .chat-msg { margin-bottom: 6px; padding: 4px 8px; border-radius: 6px; background: rgba(51, 65, 85, 0.4); }
-        .chat-msg.admin { background: rgba(99, 102, 241, 0.2); border-right: 2px solid var(--accent-indigo); }
-        .hidden { display: none !important; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+        .stat-card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 10px; text-align: center; }
+        .stat-card p { font-size: 9px; color: var(--text-sub); margin-bottom: 2px; }
+        .stat-card h3 { font-size: 15px; font-weight: 800; color: var(--accent-amber); }
+        .file-upload-box { border: 2px dashed var(--border-color); border-radius: 10px; padding: 10px; text-align: center; cursor: pointer; margin-bottom: 8px; }
+        .file-upload-box input { display: none; }
+        .file-upload-box p { font-size: 10px; color: var(--text-sub); }
+        .timer-display { font-family: monospace; font-size: 20px; font-weight: 800; text-align: center; color: var(--accent-green); background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); padding: 10px; border-radius: 10px; margin-bottom: 10px; }
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.85); z-index: 100; align-items: center; justify-content: center; padding: 16px; }
+        .modal.active { display: flex; }
+        .modal-content { background-color: var(--card-bg); border: 1px solid var(--accent-amber); border-radius: 20px; padding: 16px; width: 100%; max-width: 400px; }
     </style>
 </head>
 <body>
@@ -60,116 +45,80 @@
             <div class="logo-icon">🚖</div>
             <div class="header-title">
                 <h1>MT GROUP DRIVER</h1>
-                <p>بوابة السائقين والورديات</p>
+                <p>بوابة السائقين والعمليات</p>
             </div>
         </div>
-        <button id="logoutBtn" onclick="logoutDriver()" class="hidden" style="background:transparent; border:1px solid var(--accent-red); color:var(--accent-red); border-radius:8px; padding:4px 8px; font-size:10px; cursor:pointer;">خروج</button>
+        <span id="connStatus" style="font-size:9px; color:var(--accent-green);">🟢 متصل</span>
     </header>
 
-    <main>
-        <!-- شاشة تسجيل الدخول -->
-        <div id="loginSection" class="card">
-            <div class="card-header"><span class="card-title">🔑 تسجيل دخول السائق</span></div>
-            <div class="form-group">
-                <label>اختر اسمك من الأسطول</label>
-                <select id="loginDriverSelect" class="form-control"></select>
-            </div>
-            <button onclick="loginDriver()" class="btn-submit">دخول</button>
+    <div id="loginSection" class="card">
+        <div class="card-header">🔑 تسجيل دخول السائق</div>
+        <div class="form-group">
+            <label>اختر اسمك من القائمة:</label>
+            <select id="driverSelect" class="form-control"></select>
         </div>
+        <button onclick="driverLogin()" class="btn-submit">دخول إلى لوحتي</button>
+    </div>
 
-        <!-- الشاشة الرئيسية للسائق -->
-        <div id="driverDashboard" class="hidden">
+    <div id="driverDashboard" style="display:none;">
+        <div class="card">
+            <div class="card-header">
+                <span id="driverWelcomeTitle">مرحباً بالسائق</span>
+                <button onclick="driverLogout()" style="background:transparent; border:none; color:var(--accent-red); font-size:10px; cursor:pointer;">خروج ✕</button>
+            </div>
             
-            <!-- بطاقة معلومات السائق -->
-            <div class="driver-profile-card">
-                <div class="profile-header">
-                    <div>
-                        <span style="font-size: 9px; color: var(--accent-amber); font-weight: 700;">بطاقة السائق المعتمدة</span>
-                        <h3 id="profileDriverName" style="font-size: 15px; font-weight: 800; color: #fff; margin-top: 2px;">--</h3>
-                    </div>
-                    <span id="shiftStatusBadge" style="font-size:9px; font-weight:700; padding:4px 10px; border-radius:8px; background:rgba(148,163,184,0.1); color:var(--text-sub);">في الاستراحة</span>
-                </div>
-                <div class="profile-info-grid">
-                    <div class="profile-item">
-                        <span>السيارة ورقم اللوحة</span>
-                        <b id="profileCarInfo">--</b>
-                    </div>
-                    <div class="profile-item">
-                        <span>نوع الشفت (الوردية)</span>
-                        <b id="profileShiftType" style="color: var(--accent-amber);">--</b>
-                    </div>
-                    <div class="profile-item" style="grid-column: span 2;">
-                        <span>رقم الهاتف المسجل</span>
-                        <b id="profilePhone">--</b>
-                    </div>
-                </div>
-            </div>
-
-            <!-- إحصائيات الأسبوع (ساعات الأسبوع، إجمالي الأجر، السلف) -->
-            <div class="weekly-stats-grid">
-                <div class="w-stat-box">
-                    <p>ساعات الأسبوع</p>
-                    <h4 id="statWeekHours" style="color: var(--accent-amber);">0.0 س</h4>
-                </div>
-                <div class="w-stat-box">
-                    <p>إجمالي الأجر</p>
-                    <h4 id="statTotalSalary" style="color: var(--accent-green);">0 ل.س</h4>
-                </div>
-                <div class="w-stat-box">
-                    <p>إجمالي السلف</p>
-                    <h4 id="statTotalAdvances" style="color: var(--accent-red);">0 ل.س</h4>
-                </div>
-            </div>
-
-            <!-- عداد الساعات المباشر أثناء الوردية -->
-            <div id="liveTimerCard" class="live-timer-card hidden">
-                <span style="font-size: 11px; font-weight: 700; color: var(--text-sub);">⏱️ عداد الساعات المباشر للوردية الحالية</span>
-                <div id="driverLiveTimer" class="live-timer-display">00:00:00</div>
-            </div>
-
-            <!-- لوحة التحكم بالوردية -->
-            <div class="card">
-                <div class="card-header"><span class="card-title">⏱️ إدارة وردية العمل والعداد</span></div>
-                
-                <div id="startShiftControls">
-                    <div class="form-group">
-                        <label>📸 تصوير عداد البداية (الكاميرا مباشرة):</label>
-                        <input type="file" id="startOdoFile" accept="image/*" capture="environment" class="form-control">
-                    </div>
-                    <button onclick="startShift()" class="btn-submit btn-green">📷 فتح الكاميرا وبدء الوردية</button>
-                </div>
-
-                <div id="endShiftControls" class="hidden">
-                    <div class="form-group">
-                        <label>📸 تصوير عداد النهاية (الكاميرا مباشرة):</label>
-                        <input type="file" id="endOdoFile" accept="image/*" capture="environment" class="form-control">
-                    </div>
-                    <button onclick="endShift()" class="btn-submit btn-danger">📷 فتح الكاميرا وإنهاء الوردية</button>
-                </div>
-            </div>
-
-            <!-- طلب سلفة مالية -->
-            <div class="card">
-                <div class="card-header"><span class="card-title">💵 طلب سلفة مالية</span></div>
+            <div id="startShiftBox">
                 <div class="form-group">
-                    <label>المبلغ المطلوب (ل.س)</label>
-                    <input type="number" id="advanceAmountInput" placeholder="مثال: 50000" class="form-control">
+                    <label>📷 صورة عداد بداية الوردية:</label>
+                    <div class="file-upload-box" onclick="document.getElementById('startOdoFile').click()">
+                        <p id="startFileLabel">اضغط لرفع صورة العداد أو التقاطها</p>
+                        <input type="file" id="startOdoFile" accept="image/*" capture="environment" onchange="handleImageUpload(event, 'start')">
+                    </div>
                 </div>
-                <button onclick="requestAdvance()" class="btn-submit">إرسال طلب السلفة للإدارة</button>
+                <button onclick="startShift()" class="btn-submit" style="background-color: var(--accent-green); color: #000;">🟢 بدء الوردية وتسجيل العداد</button>
             </div>
 
-            <!-- الدردشة وملاحظات الإدارة -->
-            <div class="card">
-                <div class="card-header"><span class="card-title">💬 الدردشة والملاحظات مع الإدارة</span></div>
-                <div id="driverChatBox" class="chat-box"></div>
-                <div class="form-group" style="margin-bottom:0; display:flex; gap:6px; margin-top:6px;">
-                    <input type="text" id="driverChatInput" placeholder="اكتب رسالتك للإدارة..." class="form-control" style="margin-bottom:0;">
-                    <button onclick="sendDriverNote()" class="btn-submit" style="width:auto; margin:0; padding:10px 14px;">إرسال</button>
+            <div id="activeShiftBox" style="display:none;">
+                <p style="font-size:11px; text-align:center; color:var(--accent-green); font-weight:700; margin-bottom:6px;">🟢 الوردية جارية الآن...</p>
+                <div id="liveTimer" class="timer-display">00:00:00</div>
+                
+                <div class="form-group">
+                    <label>📷 صورة عداد نهاية الوردية:</label>
+                    <div class="file-upload-box" onclick="document.getElementById('endOdoFile').click()">
+                        <p id="endFileLabel">اضغط لرفع صورة العداد عند الإنهاء</p>
+                        <input type="file" id="endOdoFile" accept="image/*" capture="environment" onchange="handleImageUpload(event, 'end')">
+                    </div>
                 </div>
+                <button onclick="endShift()" class="btn-submit btn-danger">🔴 إنهاء الوردية وتسجيل العداد</button>
             </div>
         </div>
-    </main>
 
+        <div class="stats-grid">
+            <div class="stat-card"><p>ساعات اليوم</p><h3 id="todayHoursVal">0 س</h3></div>
+            <div class="stat-card"><p>إجمالي الأسبوع</p><h3 id="weekHoursVal">0 س</h3></div>
+            <div class="stat-card"><p>الأجر المقدر</p><h3 id="salaryVal">0 ل.س</h3></div>
+            <div class="stat-card"><p>السلف المسحوبة</p><h3 id="advanceVal">0 ل.س</h3></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">💸 طلب سلفة نقدية أسبوعية</div>
+            <div class="form-group">
+                <input type="number" id="advanceAmountInput" placeholder="أدخل مبلغ السلفة (ل.س)" class="form-control">
+            </div>
+            <button onclick="requestAdvance()" class="btn-submit" style="background-color: var(--accent-indigo); color:#fff;">إرسال طلب السلفة للإدارة</button>
+        </div>
+
+        <div class="card">
+            <div class="card-header">💬 التواصل مع الإدارة</div>
+            <div id="chatMessagesBox" style="background:#0f172a; border:1px solid var(--border-color); border-radius:8px; padding:8px; height:100px; overflow-y:auto; font-size:10px; margin-bottom:8px;"></div>
+            <div style="display:flex; gap:6px;">
+                <input type="text" id="driverNoteInput" placeholder="اكتب رسالتك للإدارة..." class="form-control" style="margin-bottom:0;">
+                <button onclick="sendDriverNote()" class="btn-submit" style="width:auto; margin:0; padding:8px 12px; background:var(--accent-indigo); color:#fff;">إرسال</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script>
@@ -186,82 +135,61 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        let currentDriver = JSON.parse(localStorage.getItem('mt_current_driver')) || null;
+        let currentDriver = JSON.parse(localStorage.getItem('mt_current_driver') || 'null');
         let allCarsData = [];
-        let activeShiftsData = {};
-        let HOURLY_RATE = 8500;
-        let timerInterval = null;
+        let uploadedStartImg = "";
+        let uploadedEndImg = "";
+        let globalHourlyRate = 8500;
 
-        // جلب أجر الساعة المحدث من قاعدة البيانات
-        db.ref('settings/hourlyRate').on('value', (snapshot) => {
-            if (snapshot.exists()) HOURLY_RATE = Number(snapshot.val()) || 8500;
-            if (currentDriver) updateDriverFinancialStats();
+        db.ref('settings/hourlyRate').on('value', (snap) => {
+            if (snap.exists()) globalHourlyRate = Number(snap.val()) || 8500;
         });
 
         db.ref('cars').on('value', (snapshot) => {
             allCarsData = snapshot.val() ? Object.values(snapshot.val()) : [];
-            updateDriverSelectOptions();
-            if (currentDriver) verifyDriverSession();
+            populateDriverSelect();
+            if (currentDriver) checkActiveShiftState();
         });
 
-        db.ref('activeShifts').on('value', (snapshot) => {
-            activeShiftsData = snapshot.val() || {};
-            if (currentDriver) updateShiftUIState();
-        });
-
-        // الاستماع المستمر لتحديثات السجلات الأسبوعية للسائق (الساعات والسلف)
-        function listenToDriverWeeklyRecords() {
-            if (!currentDriver) return;
-            const weekId = getSaturdayWeekId();
-            db.ref(`weeklyRecords/${weekId}/${currentDriver.name}`).on('value', (snapshot) => {
-                window.currentDriverRecord = snapshot.val() || { hours: 0, advances: 0 };
-                updateDriverFinancialStats();
-            });
-        }
-
-        function updateDriverSelectOptions() {
-            const select = document.getElementById('loginDriverSelect');
+        function populateDriverSelect() {
+            const select = document.getElementById('driverSelect');
             if (!select) return;
             let driversList = [];
-            allCarsData.forEach(c => {
-                if (c.dayDriver?.name?.trim()) driversList.push({ name: c.dayDriver.name, phone: c.dayDriver.phone || 'غير متوفر', car: c.plate, shift: 'نهاري', carId: c.id });
-                if (c.nightDriver?.name?.trim()) driversList.push({ name: c.nightDriver.name, phone: c.nightDriver.phone || 'غير متوفر', car: c.plate, shift: 'ليلي', carId: c.id });
+            allCarsData.forEach(car => {
+                if (car.dayDriver?.name?.trim()) driversList.push({ name: car.dayDriver.name, car: car.plate, shift: 'نهاري' });
+                if (car.nightDriver?.name?.trim()) driversList.push({ name: car.nightDriver.name, car: car.plate, shift: 'ليلي' });
             });
-            select.innerHTML = `<option value="">اختر اسمك...</option>` + driversList.map(d => `<option value="${d.name}|${d.car}|${d.shift}|${d.carId}|${d.phone}">${d.name} (${d.car} - ${d.shift})</option>`).join('');
+            select.innerHTML = `<option value="">اختر اسمك...</option>` + driversList.map(d => `
+                <option value='${JSON.stringify(d)}'>${d.name} (${d.car} - ${d.shift})</option>
+            `).join('');
         }
 
-        function loginDriver() {
-            const val = document.getElementById('loginDriverSelect').value;
-            if (!val) { alert("الرجاء اختيار اسمك."); return; }
-            const parts = val.split('|');
-            currentDriver = { name: parts[0], car: parts[1], shift: parts[2], carId: Number(parts[3]), phone: parts[4] };
+        if (currentDriver) {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('driverDashboard').style.display = 'block';
+            document.getElementById('driverWelcomeTitle').innerText = `مرحباً: ${currentDriver.name} (${currentDriver.car})`;
+            startDriverDataListeners();
+        }
+
+        function driverLogin() {
+            const val = document.getElementById('driverSelect').value;
+            if (!val) {
+                alert("الرجاء اختيار اسم السائق.");
+                return;
+            }
+            currentDriver = JSON.parse(val);
             localStorage.setItem('mt_current_driver', JSON.stringify(currentDriver));
-            verifyDriverSession();
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('driverDashboard').style.display = 'block';
+            document.getElementById('driverWelcomeTitle').innerText = `مرحباً: ${currentDriver.name} (${currentDriver.car})`;
+            startDriverDataListeners();
+            checkActiveShiftState();
         }
 
-        function verifyDriverSession() {
-            if (!currentDriver) return;
-            document.getElementById('loginSection').classList.add('hidden');
-            document.getElementById('driverDashboard').classList.remove('hidden');
-            document.getElementById('logoutBtn').classList.remove('hidden');
-            
-            document.getElementById('profileDriverName').innerText = currentDriver.name;
-            document.getElementById('profileCarInfo').innerText = currentDriver.car;
-            document.getElementById('profileShiftType').innerText = currentDriver.shift;
-            document.getElementById('profilePhone').innerText = currentDriver.phone;
-            
-            listenToDriverWeeklyRecords();
-            updateShiftUIState();
-            loadDriverChat();
-        }
-
-        function logoutDriver() {
+        function driverLogout() {
             localStorage.removeItem('mt_current_driver');
             currentDriver = null;
-            if (timerInterval) clearInterval(timerInterval);
-            document.getElementById('driverDashboard').classList.add('hidden');
-            document.getElementById('logoutBtn').classList.add('hidden');
-            document.getElementById('loginSection').classList.remove('hidden');
+            location.reload();
         }
 
         function getSaturdayWeekId(dateObj = new Date()) {
@@ -272,187 +200,255 @@
             return `${d.getFullYear()}-W_Sat_${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         }
 
-        function fileToBase64(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = error => reject(error);
-            });
+        function handleImageUpload(event, type) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64 = e.target.result;
+                if (type === 'start') {
+                    uploadedStartImg = base64;
+                    document.getElementById('startFileLabel').innerText = "✅ تم اختيار صورة البداية بنجاح";
+                } else {
+                    uploadedEndImg = base64;
+                    document.getElementById('endFileLabel').innerText = "✅ تم اختيار صورة النهاية بنجاح";
+                }
+            };
+            reader.readAsDataURL(file);
         }
 
-        async function startShift() {
-            const fileInput = document.getElementById('startOdoFile');
-            let imgBase64 = "";
-            if (fileInput.files && fileInput.files[0]) {
-                imgBase64 = await fileToBase64(fileInput.files[0]);
-            } else {
-                alert("⚠️ يرجى تصوير العداد من الكاميرا أولاً.");
-                return;
-            }
-
-            const timestamp = Date.now();
-            const weekId = getSaturdayWeekId();
-            const dateKey = new Date().toISOString().split('T')[0];
-
-            const shiftData = { driver: currentDriver.name, car: currentDriver.car, timestamp: timestamp };
+        // دالة التحقق ومعرفة سيارة السائق والزميل على نفس السيارة لتطبيق قفل الشفت المزدوج
+        function checkActiveShiftState() {
+            if (!currentDriver) return;
             
-            const updates = {};
-            updates[`activeShifts/${currentDriver.carId}`] = shiftData;
-            updates[`weeklyRecords/${weekId}/${currentDriver.name}/odoStartImg`] = imgBase64;
-            updates[`weeklyRecords/${weekId}/${currentDriver.name}/odoStartTimestamp`] = timestamp;
-            updates[`weeklyRecords/${weekId}/${currentDriver.name}/days/${dateKey}/startTime`] = timestamp;
-            updates[`weeklyRecords/${weekId}/${currentDriver.name}/days/${dateKey}/status`] = 'present';
+            // إيجاد سيارة السائق الحالي والزميل الذي معه على نفس السيارة
+            const targetCar = allCarsData.find(c => c.plate === currentDriver.car);
+            if (!targetCar) return;
 
-            db.ref().update(updates).then(() => {
-                alert("✅ تم التقاط الصورة وبدء الوردية بنجاح!");
-                fileInput.value = "";
-                updateShiftUIState();
+            const dayDrvName = targetCar.dayDriver?.name || "";
+            const nightDrvName = targetCar.nightDriver?.name || "";
+
+            db.ref('activeShifts').once('value').then((snapshot) => {
+                const activeShifts = snapshot.val() || {};
+                let shiftData = null;
+                let activeOnCar = false;
+
+                Object.keys(activeShifts).forEach(carId => {
+                    const shift = activeShifts[carId];
+                    if (shift && shift.car === currentDriver.car) {
+                        activeOnCar = true;
+                        if (shift.driver === currentDriver.name) {
+                            shiftData = shift;
+                        }
+                    }
+                });
+
+                const startBox = document.getElementById('startShiftBox');
+                const activeBox = document.getElementById('activeShiftBox');
+
+                if (shiftData) {
+                    startBox.style.display = 'none';
+                    activeBox.style.display = 'block';
+                    runLiveTimer(shiftData.timestamp);
+                } else {
+                    activeBox.style.display = 'none';
+                    startBox.style.display = 'block';
+                }
             });
         }
 
-        async function endShift() {
-            const fileInput = document.getElementById('endOdoFile');
-            let imgBase64 = "";
-            if (fileInput.files && fileInput.files[0]) {
-                imgBase64 = await fileToBase64(fileInput.files[0]);
-            } else {
-                alert("⚠️ يرجى تصوير العداد من الكاميرا أولاً.");
+        function startShift() {
+            if (!uploadedStartImg) {
+                alert("الرجاء التقاط أو رفع صورة عداد بداية الوردية.");
                 return;
             }
 
-            const shiftData = activeShiftsData[currentDriver.carId];
-            if (!shiftData) return;
+            // التحقق قبل بدء الوردية: هل الزميل الآخر على نفس السيارة في وردية الآن؟
+            const targetCar = allCarsData.find(c => c.plate === currentDriver.car);
+            if (!targetCar) {
+                alert("لم يتم العثور على بيانات السيارة.");
+                return;
+            }
 
-            const endTime = Date.now();
-            const elapsedHours = Math.max(0, (endTime - shiftData.timestamp) / 1000) / 3600;
-            const weekId = getSaturdayWeekId();
-            const dateKey = new Date().toISOString().split('T')[0];
+            db.ref('activeShifts').once('value').then((snapshot) => {
+                const activeShifts = snapshot.val() || {};
+                let otherDriverOnDuty = false;
+                let otherDriverName = "";
 
-            db.ref(`weeklyRecords/${weekId}/${currentDriver.name}/hours`).once('value', (snapshot) => {
-                const currentHours = Number(snapshot.val()) || 0;
-                const newTotalHours = currentHours + elapsedHours;
+                Object.keys(activeShifts).forEach(carId => {
+                    const shift = activeShifts[carId];
+                    if (shift && shift.car === currentDriver.car && shift.driver !== currentDriver.name) {
+                        otherDriverOnDuty = true;
+                        otherDriverName = shift.driver;
+                    }
+                });
+
+                if (otherDriverOnDuty) {
+                    alert(`⚠️ عذراً، لا يمكنك بدء ورديتك الآن لأن السائق (${otherDriverName}) الذي معك على نفس السيارة في وردية حالياً ولم ينتهِ منها بعد.`);
+                    return;
+                }
+
+                // إذا كانت السيارة فارغة، قم ببدء الوردية بنجاح
+                const startTime = Date.now();
+                const weekId = getSaturdayWeekId();
+                const carIdObj = targetCar.id || Date.now();
+
+                const shiftInfo = {
+                    driver: currentDriver.name,
+                    car: currentDriver.car,
+                    timestamp: startTime,
+                    odoStartImg: uploadedStartImg
+                };
+
+                const dateKey = new Date().toISOString().split('T')[0];
+                const dayUpdate = {
+                    startTime: startTime,
+                    status: 'present',
+                    odoStartImg: uploadedStartImg
+                };
 
                 const updates = {};
-                updates[`activeShifts/${currentDriver.carId}`] = null;
-                updates[`weeklyRecords/${weekId}/${currentDriver.name}/hours`] = newTotalHours;
-                updates[`weeklyRecords/${weekId}/${currentDriver.name}/odoEndImg`] = imgBase64;
-                updates[`weeklyRecords/${weekId}/${currentDriver.name}/odoEndTimestamp`] = endTime;
-                updates[`weeklyRecords/${weekId}/${currentDriver.name}/days/${dateKey}/endTime`] = endTime;
+                updates[`activeShifts/${carIdObj}`] = shiftInfo;
+                updates[`weeklyRecords/${weekId}/${currentDriver.name}/days/${dateKey}`] = dayUpdate;
+                updates[`weeklyRecords/${weekId}/${currentDriver.name}/odoStartImg`] = uploadedStartImg;
+                updates[`weeklyRecords/${weekId}/${currentDriver.name}/odoStartTimestamp`] = startTime;
 
                 db.ref().update(updates).then(() => {
-                    alert("✅ تم إنهاء الوردية بنجاح وحساب الساعات!");
-                    fileInput.value = "";
-                    updateShiftUIState();
+                    alert("🟢 تم بدء الوردية وتسجيل العداد بنجاح!");
+                    checkActiveShiftState();
                 });
             });
         }
 
-        function updateShiftUIState() {
-            if (!currentDriver) return;
-            const shift = activeShiftsData[currentDriver.carId];
-            const isMyShiftActive = shift && (shift.driver === currentDriver.name);
-
-            const startControls = document.getElementById('startShiftControls');
-            const endControls = document.getElementById('endShiftControls');
-            const badge = document.getElementById('shiftStatusBadge');
-            const liveTimerCard = document.getElementById('liveTimerCard');
-
-            if (isMyShiftActive) {
-                startControls.classList.add('hidden');
-                endControls.classList.remove('hidden');
-                liveTimerCard.classList.remove('hidden');
-                badge.innerText = "🟢 في وردية نشطة";
-                badge.style.background = "rgba(16, 185, 129, 0.2)";
-                badge.style.color = "var(--accent-green)";
-
-                if (!timerInterval) {
-                    const startTime = shift.timestamp;
-                    timerInterval = setInterval(() => {
-                        const diffSecs = Math.max(0, Math.floor((Date.now() - startTime) / 1000));
-                        const h = Math.floor(diffSecs / 3600);
-                        const m = Math.floor((diffSecs % 3600) / 60);
-                        const s = diffSecs % 60;
-                        document.getElementById('driverLiveTimer').innerText = 
-                            `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-                        
-                        // تحديث الأجور وساعات الأسبوع بشكل حي أثناء العمل
-                        updateDriverFinancialStats(diffSecs / 3600);
-                    }, 1000);
-                }
-            } else {
-                startControls.classList.remove('hidden');
-                endControls.classList.add('hidden');
-                liveTimerCard.classList.add('hidden');
-                badge.innerText = "⚪ في الاستراحة";
-                badge.style.background = "rgba(148, 163, 184, 0.1)";
-                badge.style.color = "var(--text-sub)";
-
-                if (timerInterval) {
-                    clearInterval(timerInterval);
-                    timerInterval = null;
-                }
-                updateDriverFinancialStats(0);
+        function endShift() {
+            if (!uploadedEndImg) {
+                alert("الرجاء التقاط أو رفع صورة عداد نهاية الوردية.");
+                return;
             }
+
+            const targetCar = allCarsData.find(c => c.plate === currentDriver.car);
+            const carIdObj = targetCar ? targetCar.id : null;
+            const endTime = Date.now();
+            const weekId = getSaturdayWeekId();
+
+            db.ref(`activeShifts`).once('value').then((snapshot) => {
+                const activeShifts = snapshot.val() || {};
+                let foundKey = null;
+                let shiftData = null;
+
+                Object.keys(activeShifts).forEach(key => {
+                    const sh = activeShifts[key];
+                    if (sh && sh.driver === currentDriver.name) {
+                        foundKey = key;
+                        shiftData = sh;
+                    }
+                });
+
+                if (!shiftData) {
+                    alert("لم يتم العثور على وردية نشطة مسجلة باسمك.");
+                    return;
+                }
+
+                const startTime = shiftData.timestamp;
+                const elapsedHours = Math.max(0, (endTime - startTime) / 3600000);
+                const dateKey = new Date().toISOString().split('T')[0];
+
+                db.ref(`weeklyRecords/${weekId}/${currentDriver.name}`).once('value').then((recSnap) => {
+                    const rec = recSnap.val() || { hours: 0, todayHours: 0 };
+                    const newTotalHours = (Number(rec.hours) || 0) + elapsedHours;
+                    const newTodayHours = (Number(rec.todayHours) || 0) + elapsedHours;
+
+                    const updates = {};
+                    updates[`activeShifts/${foundKey}`] = null;
+                    updates[`weeklyRecords/${weekId}/${currentDriver.name}/hours`] = newTotalHours;
+                    updates[`weeklyRecords/${weekId}/${currentDriver.name}/todayHours`] = newTodayHours;
+                    updates[`weeklyRecords/${weekId}/${currentDriver.name}/lastShiftStart`] = startTime;
+                    updates[`weeklyRecords/${weekId}/${currentDriver.name}/lastShiftEnd`] = endTime;
+                    updates[`weeklyRecords/${weekId}/${currentDriver.name}/odoEndImg`] = uploadedEndImg;
+                    updates[`weeklyRecords/${weekId}/${currentDriver.name}/odoEndTimestamp`] = endTime;
+                    updates[`weeklyRecords/${weekId}/${currentDriver.name}/days/${dateKey}/endTime`] = endTime;
+                    updates[`weeklyRecords/${weekId}/${currentDriver.name}/days/${dateKey}/odoEndImg`] = uploadedEndImg;
+
+                    db.ref().update(updates).then(() => {
+                        alert("🔴 تم إنهاء الوردية وحفظ الساعات بنجاح!");
+                        location.reload();
+                    });
+                });
+            });
         }
 
-        function updateDriverFinancialStats(liveActiveHours = 0) {
-            if (!currentDriver) return;
-            const rec = window.currentDriverRecord || { hours: 0, advances: 0 };
-            const baseHours = rec.hours || 0;
-            const totalWeekHours = baseHours + liveActiveHours;
-            const totalSalary = totalWeekHours * HOURLY_RATE;
-            const totalAdvances = rec.advances || 0;
-
-            document.getElementById('statWeekHours').innerText = `${totalWeekHours.toFixed(1)} س`;
-            document.getElementById('statTotalSalary').innerText = `${Math.round(totalSalary).toLocaleString()} ل.س`;
-            document.getElementById('statTotalAdvances').innerText = `${totalAdvances.toLocaleString()} ل.س`;
+        let timerInterval = null;
+        function runLiveTimer(startTimestamp) {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                const now = Date.now();
+                const diff = Math.max(0, Math.floor((now - startTimestamp) / 1000));
+                const h = Math.floor(diff / 3600);
+                const m = Math.floor((diff % 3600) / 60);
+                const s = diff % 60;
+                const el = document.getElementById('liveTimer');
+                if (el) {
+                    el.innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+                }
+            }, 1000);
         }
 
         function requestAdvance() {
             const amount = Number(document.getElementById('advanceAmountInput').value);
-            if (!amount || amount <= 0) { alert("أدخل مبلغاً صحيحاً."); return; }
-
+            if (!amount || amount <= 0) {
+                alert("الرجاء إدخال مبلغ صحيح للسلفة.");
+                return;
+            }
             const weekId = getSaturdayWeekId();
-            db.ref(`weeklyRecords/${weekId}/${currentDriver.name}/advances`).once('value', (snapshot) => {
-                const currentAdv = Number(snapshot.val()) || 0;
-                db.ref(`weeklyRecords/${weekId}/${currentDriver.name}/advances`).set(currentAdv + amount).then(() => {
-                    alert("✅ تم إرسال طلب السلفة بنجاح للإدارة.");
+            db.ref(`weeklyRecords/${weekId}/${currentDriver.name}/advances`).once('value').then(snap => {
+                const currentAdvances = Number(snap.val()) || 0;
+                db.ref(`weeklyRecords/${weekId}/${currentDriver.name}/advances`).set(currentAdvances + amount).then(() => {
+                    alert("✅ تم إرسال طلب السلفة إلى الإدارة بنجاح!");
                     document.getElementById('advanceAmountInput').value = "";
                 });
             });
         }
 
-        function loadDriverChat() {
-            if (!currentDriver) return;
-            db.ref(`notes/${currentDriver.name}`).on('value', (snapshot) => {
-                const chatBox = document.getElementById('driverChatBox');
-                const data = snapshot.val() || {};
-                const msgs = Object.values(data);
-                if (msgs.length === 0) {
-                    chatBox.innerHTML = `<p style="color:var(--text-sub); text-align:center; padding-top:40px;">لا توجد رسائل سابقة.</p>`;
-                    return;
-                }
-                chatBox.innerHTML = msgs.map(m => `
-                    <div class="chat-msg ${m.sender === 'الإدارة' ? 'admin' : ''}">
-                        <b>${m.sender}:</b> ${m.text}
-                    </div>
-                `).join('');
-                chatBox.scrollTop = chatBox.scrollHeight;
-            });
-        }
-
         function sendDriverNote() {
-            const input = document.getElementById('driverChatInput');
+            const input = document.getElementById('driverNoteInput');
             const text = input.value.trim();
-            if (!text || !currentDriver) return;
-
+            if (!text) return;
             db.ref(`notes/${currentDriver.name}`).push({
                 sender: currentDriver.name,
                 text: text,
                 timestamp: Date.now()
             }).then(() => {
                 input.value = "";
+            });
+        }
+
+        function startDriverDataListeners() {
+            if (!currentDriver) return;
+            const weekId = getSaturdayWeekId();
+
+            db.ref(`weeklyRecords/${weekId}/${currentDriver.name}`).on('value', (snap) => {
+                const data = snap.val() || {};
+                const totalHours = Number(data.hours) || 0;
+                const todayHours = Number(data.todayHours) || 0;
+                const advances = Number(data.advances) || 0;
+                const driverRate = data.customHourlyRate !== undefined ? Number(data.customHourlyRate) : globalHourlyRate;
+                const estimatedSalary = totalHours * driverRate;
+
+                document.getElementById('todayHoursVal').innerText = `${todayHours.toFixed(1)} س`;
+                document.getElementById('weekHoursVal').innerText = `${totalHours.toFixed(1)} س`;
+                document.getElementById('salaryVal').innerText = `${Math.round(estimatedSalary).toLocaleString()} ل.س`;
+                document.getElementById('advanceVal').innerText = `${advances.toLocaleString()} ل.س`;
+            });
+
+            db.ref(`notes/${currentDriver.name}`).on('value', (snap) => {
+                const notes = snap.val() || {};
+                const box = document.getElementById('chatMessagesBox');
+                box.innerHTML = Object.values(notes).map(n => `
+                    <div style="margin-bottom:4px; border-bottom:1px solid rgba(51,65,85,0.4); padding-bottom:2px;">
+                        <b style="color:${n.sender === 'الإدارة' ? 'var(--accent-amber)' : 'var(--accent-green)'};">${n.sender}:</b> ${n.text}
+                    </div>
+                `).join('') || '<p style="color:var(--text-sub); text-align:center;">لا توجد رسائل سابقة.</p>';
+                box.scrollTop = box.scrollHeight;
             });
         }
     </script>
