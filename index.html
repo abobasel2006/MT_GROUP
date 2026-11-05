@@ -166,6 +166,7 @@
             document.getElementById('driverDashboard').style.display = 'block';
             document.getElementById('driverWelcomeTitle').innerText = `مرحباً: ${currentDriver.name} (${currentDriver.car})`;
             startDriverDataListeners();
+            checkActiveShiftState();
         }
 
         function driverLogin() {
@@ -231,12 +232,12 @@
                 const activeBox = document.getElementById('activeShiftBox');
 
                 if (shiftData) {
-                    startBox.style.display = 'none';
-                    activeBox.style.display = 'block';
+                    if (startBox) startBox.style.display = 'none';
+                    if (activeBox) activeBox.style.display = 'block';
                     runLiveTimer(shiftData.timestamp);
                 } else {
-                    activeBox.style.display = 'none';
-                    startBox.style.display = 'block';
+                    if (activeBox) activeBox.style.display = 'none';
+                    if (startBox) startBox.style.display = 'block';
                 }
             });
         }
@@ -247,13 +248,13 @@
                 return;
             }
 
-            const targetCar = allCarsData.find(c => c.plate === currentDriver.car);
+            // البحث المرن عن السيارة للتأكد من وجودها حتى لو اختلفت المسافات
+            let targetCar = allCarsData.find(c => c.plate.trim() === currentDriver.car.trim());
             if (!targetCar) {
-                alert("لم يتم العثور على بيانات السيارة.");
-                return;
+                targetCar = { id: Date.now(), plate: currentDriver.car };
             }
 
-            // التحقق من قفل الوردية المزدوجة (منع تداخل الزميل على نفس السيارة)
+            // فحص الشفت المزدوج والبدء المباشر
             db.ref('activeShifts').once('value').then((snapshot) => {
                 const activeShifts = snapshot.val() || {};
                 let otherDriverOnDuty = false;
@@ -261,7 +262,7 @@
 
                 Object.keys(activeShifts).forEach(carId => {
                     const shift = activeShifts[carId];
-                    if (shift && shift.car === currentDriver.car && shift.driver !== currentDriver.name) {
+                    if (shift && shift.car && shift.car.trim() === currentDriver.car.trim() && shift.driver !== currentDriver.name) {
                         otherDriverOnDuty = true;
                         otherDriverName = shift.driver;
                     }
@@ -299,6 +300,8 @@
                 db.ref().update(updates).then(() => {
                     alert("🟢 تم بدء الوردية وتسجيل العداد بنجاح!");
                     checkActiveShiftState();
+                }).catch(err => {
+                    alert("حدث خطأ أثناء الاتصال بقاعدة البيانات: " + err.message);
                 });
             });
         }
@@ -309,8 +312,6 @@
                 return;
             }
 
-            const targetCar = allCarsData.find(c => c.plate === currentDriver.car);
-            const carIdObj = targetCar ? targetCar.id : null;
             const endTime = Date.now();
             const weekId = getSaturdayWeekId();
 
@@ -417,21 +418,28 @@
                 const driverRate = data.customHourlyRate !== undefined ? Number(data.customHourlyRate) : globalHourlyRate;
                 const estimatedSalary = totalHours * driverRate;
 
-                document.getElementById('todayHoursVal').innerText = `${todayHours.toFixed(1)} س`;
-                document.getElementById('weekHoursVal').innerText = `${totalHours.toFixed(1)} س`;
-                document.getElementById('salaryVal').innerText = `${Math.round(estimatedSalary).toLocaleString()} ل.س`;
-                document.getElementById('advanceVal').innerText = `${advances.toLocaleString()} ل.س`;
+                const todayEl = document.getElementById('todayHoursVal');
+                const weekEl = document.getElementById('weekHoursVal');
+                const salaryEl = document.getElementById('salaryVal');
+                const advanceEl = document.getElementById('advanceVal');
+
+                if (todayEl) todayEl.innerText = `${todayHours.toFixed(1)} س`;
+                if (weekEl) weekEl.innerText = `${totalHours.toFixed(1)} س`;
+                if (salaryEl) salaryEl.innerText = `${Math.round(estimatedSalary).toLocaleString()} ل.س`;
+                if (advanceEl) advanceEl.innerText = `${advances.toLocaleString()} ل.س`;
             });
 
             db.ref(`notes/${currentDriver.name}`).on('value', (snap) => {
                 const notes = snap.val() || {};
                 const box = document.getElementById('chatMessagesBox');
-                box.innerHTML = Object.values(notes).map(n => `
-                    <div style="margin-bottom:4px; border-bottom:1px solid rgba(51,65,85,0.4); padding-bottom:2px;">
-                        <b style="color:${n.sender === 'الإدارة' ? 'var(--accent-amber)' : 'var(--accent-green)'};">${n.sender}:</b> ${n.text}
-                    </div>
-                `).join('') || '<p style="color:var(--text-sub); text-align:center;">لا توجد رسائل سابقة.</p>';
-                box.scrollTop = box.scrollHeight;
+                if (box) {
+                    box.innerHTML = Object.values(notes).map(n => `
+                        <div style="margin-bottom:4px; border-bottom:1px solid rgba(51,65,85,0.4); padding-bottom:2px;">
+                            <b style="color:${n.sender === 'الإدارة' ? 'var(--accent-amber)' : 'var(--accent-green)'};">${n.sender}:</b> ${n.text}
+                        </div>
+                    `).join('') || '<p style="color:var(--text-sub); text-align:center;">لا توجد رسائل سابقة.</p>';
+                    box.scrollTop = box.scrollHeight;
+                }
             });
         }
     </script>
