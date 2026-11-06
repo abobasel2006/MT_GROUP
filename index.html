@@ -456,21 +456,26 @@
             }, 1000);
         }
 
+
         function requestAdvance() {
             const amount = Number(document.getElementById('advanceAmountInput').value);
             if (!Number.isFinite(amount) || amount <= 0 || !Number.isInteger(amount)) return alert('أدخل مبلغاً صحيحاً موجباً دون كسور.');
             if (!currentDriver) return alert('يرجى تسجيل الدخول أولاً.');
             const weekId = getSaturdayWeekId();
             const requestsRef = db.ref(`pendingAdvances/${weekId}`);
-            requestsRef.once('value').then(snap => {
-                const requests = snap.val() || {};
-                const alreadyPending = Object.values(requests).some(r => r && r.driver === currentDriver.name && r.status === 'pending');
-                if (alreadyPending) return alert('لديك طلب سلفة قيد المراجعة بالفعل. انتظر قرار الإدارة.');
-                const requestRef = requestsRef.push();
-                return requestRef.set({ driver: currentDriver.name, amount, timestamp: Date.now(), status: 'pending' }).then(() => {
-                    document.getElementById('advanceAmountInput').value = '';
-                    alert('تم إرسال طلب السلفة. لن يُضاف إلى رصيدك إلا بعد موافقة الإدارة.');
-                });
+            const requestRef = requestsRef.push();
+            const newRequest = { driver: currentDriver.name, amount, timestamp: Date.now(), status: 'pending' };
+            requestsRef.transaction(current => {
+                const requests = current || {};
+                const alreadyPending = Object.values(requests).some(r =>
+                    r && r.driver === currentDriver.name && ['pending', 'approving'].includes(r.status)
+                );
+                if (alreadyPending) return;
+                return { ...requests, [requestRef.key]: newRequest };
+            }).then(result => {
+                if (!result.committed) return alert('لديك طلب سلفة قيد المراجعة بالفعل. انتظر قرار الإدارة.');
+                document.getElementById('advanceAmountInput').value = '';
+                alert('تم إرسال طلب السلفة. لن يُضاف إلى رصيدك إلا بعد موافقة الإدارة.');
             }).catch(err => alert('تعذر إرسال طلب السلفة: ' + err.message));
         }
 
