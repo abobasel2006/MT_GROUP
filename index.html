@@ -319,7 +319,6 @@
         function endShift() {
             if (endingShift) return;
             if (!currentDriver) return alert('يرجى تسجيل الدخول أولاً.');
-            if (!uploadedEndImg) return alert('الرجاء التقاط أو رفع صورة عداد نهاية الوردية.');
             endingShift = true;
             const car = resolveCurrentDriverCar();
             if (!car || car.id === undefined || car.id === null) { endingShift = false; return alert('تعذر تحديد السيارة المرتبطة بحسابك. أعد تسجيل الدخول.'); }
@@ -335,12 +334,20 @@
                 if (!startTime || requestedEndTime <= startTime) { endingShift = false; return alert('بيانات وقت الوردية غير صحيحة.'); }
                 const endTime = shift.status === 'finalizing' ? Number(shift.endTime) : requestedEndTime;
                 if (!endTime || endTime <= startTime) { endingShift = false; return alert('وقت إنهاء الوردية المحفوظ غير صحيح.'); }
-                const endImage = shift.status === 'finalizing' ? (shift.endOdoImg || uploadedEndImg) : uploadedEndImg;
+                if (shift.status !== 'finalizing' && !uploadedEndImg) {
+                    endingShift = false;
+                    return alert('الرجاء التقاط أو رفع صورة عداد نهاية الوردية.');
+                }
+                const endImage = shift.status === 'finalizing' ? (shift.endOdoImg || '') : uploadedEndImg;
+                if (shift.status === 'finalizing' && shift.finalizedBy !== 'driver') {
+                    endingShift = false;
+                    return alert('بدأت الإدارة إنهاء هذه الوردية. انتظر تحديث الحالة.');
+                }
                 return db.ref(`activeShifts/${carId}`).transaction(current => {
                     if (!current || current.driver !== currentDriver.name || Number(current.timestamp) !== startTime ||
                         (current.shift && current.shift !== currentDriver.shift)) return;
-                    if (current.status === 'finalizing') return current;
-                    return { ...current, status: 'finalizing', endTime, endOdoImg: endImage };
+                    if (current.status === 'finalizing') return current.finalizedBy === 'driver' ? current : undefined;
+                    return { ...current, status: 'finalizing', finalizedBy: 'driver', endTime, endOdoImg: endImage };
                 }).then(claim => {
                     if (!claim.committed) throw new Error('الوردية تغيرت أثناء محاولة إنهائها.');
                     return { shift: claim.snapshot.val(), endTime: Number(claim.snapshot.val().endTime), endImage: claim.snapshot.val().endOdoImg };
