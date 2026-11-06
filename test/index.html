@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>تطبيق السائقين - MT GROUP</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
+        :root {
+            --bg-color: #0f172a; --card-bg: #1e293b; --accent-amber: #f59e0b;
+            --accent-green: #10b981; --accent-red: #ef4444; --accent-indigo: #6366f1;
+            --text-main: #f8fafc; --text-sub: #94a3b8; --border-color: #334155;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-color); color: var(--text-main); padding: 12px; max-width: 480px; margin: 0 auto; direction: rtl; }
+        header { background-color: var(--card-bg); border: 1px solid var(--border-color); padding: 12px; border-radius: 14px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .logo-group { display: flex; align-items: center; gap: 8px; }
+        .logo-icon { background-color: var(--accent-amber); color: #000; width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 900; }
+        .header-title h1 { font-size: 13px; color: var(--accent-amber); font-weight: 800; }
+        .header-title p { font-size: 9px; color: var(--text-sub); }
+        .card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 14px; margin-bottom: 12px; }
+        .card-header { font-size: 12px; font-weight: 800; color: var(--accent-amber); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .form-group { margin-bottom: 10px; }
+        .form-group label { display: block; font-size: 11px; color: var(--text-sub); margin-bottom: 4px; font-weight: 600; }
+        .form-control { width: 100%; background-color: #0f172a; border: 1px solid var(--border-color); color: #fff; padding: 10px; border-radius: 10px; font-size: 12px; outline: none; }
+        .btn-submit { width: 100%; background-color: var(--accent-amber); color: #000; border: none; padding: 11px; border-radius: 10px; font-weight: 800; font-size: 12px; cursor: pointer; margin-top: 4px; }
+        .btn-danger { background-color: var(--accent-red); color: #fff; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+        .stat-card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 10px; text-align: center; }
+        .stat-card p { font-size: 9px; color: var(--text-sub); margin-bottom: 2px; }
+        .stat-card h3 { font-size: 15px; font-weight: 800; color: var(--accent-amber); }
+        .file-upload-box { border: 2px dashed var(--border-color); border-radius: 10px; padding: 10px; text-align: center; cursor: pointer; margin-bottom: 8px; }
+        .file-upload-box input { display: none; }
+        .file-upload-box p { font-size: 10px; color: var(--text-sub); }
+        .timer-display { font-family: monospace; font-size: 20px; font-weight: 800; text-align: center; color: var(--accent-green); background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); padding: 10px; border-radius: 10px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-group">
+            <div class="logo-icon">🚖</div>
+            <div class="header-title">
+                <h1>MT GROUP DRIVER</h1>
+                <p>بوابة السائقين والعمليات</p>
+            </div>
+        </div>
+        <span id="connStatus" style="font-size:9px; color:var(--accent-green);">🟢 متصل</span>
+    </header>
+
+    <div id="loginSection" class="card">
+        <div class="card-header">🔑 تسجيل دخول السائق</div>
+        <div class="form-group">
+            <label>اختر اسمك من القائمة:</label>
+            <select id="driverSelect" class="form-control"></select>
+        </div>
+        <button onclick="driverLogin()" class="btn-submit">دخول إلى لوحتي</button>
+    </div>
+
+    <div id="driverDashboard" style="display:none;">
+        <div class="card">
+            <div class="card-header">
+                <span id="driverWelcomeTitle">مرحباً بالسائق</span>
+                <button onclick="driverLogout()" style="background:transparent; border:none; color:var(--accent-red); font-size:10px; cursor:pointer;">خروج ✕</button>
+            </div>
+            
+            <div id="startShiftBox">
+                <div class="form-group">
+                    <label>📷 صورة عداد بداية الوردية:</label>
+                    <div class="file-upload-box" onclick="document.getElementById('startOdoFile').click()">
+                        <p id="startFileLabel">اضغط لرفع صورة العداد أو التقاطها</p>
+                        <input type="file" id="startOdoFile" accept="image/*" capture="environment" onchange="handleImageUpload(event, 'start')">
+                    </div>
+                </div>
+                <button onclick="startShift()" class="btn-submit" style="background-color: var(--accent-green); color: #000;">🟢 بدء الوردية وتسجيل العداد</button>
+            </div>
+
+            <div id="activeShiftBox" style="display:none;">
+                <p style="font-size:11px; text-align:center; color:var(--accent-green); font-weight:700; margin-bottom:6px;">🟢 الوردية جارية الآن...</p>
+                <div id="liveTimer" class="timer-display">00:00:00</div>
+                
+                <div class="form-group">
+                    <label>📷 صورة عداد نهاية الوردية:</label>
+                    <div class="file-upload-box" onclick="document.getElementById('endOdoFile').click()">
+                        <p id="endFileLabel">اضغط لرفع صورة العداد عند الإنهاء</p>
+                        <input type="file" id="endOdoFile" accept="image/*" capture="environment" onchange="handleImageUpload(event, 'end')">
+                    </div>
+                </div>
+                <button onclick="endShift()" class="btn-submit btn-danger">🔴 إنهاء الوردية وتسجيل العداد</button>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card"><p>ساعات اليوم</p><h3 id="todayHoursVal">0 س</h3></div>
+            <div class="stat-card"><p>إجمالي الأسبوع</p><h3 id="weekHoursVal">0 س</h3></div>
+            <div class="stat-card"><p>الأجر المقدر</p><h3 id="salaryVal">0 ل.س</h3></div>
+            <div class="stat-card"><p>السلف المسحوبة</p><h3 id="advanceVal">0 ل.س</h3></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">💸 طلب سلفة نقدية أسبوعية</div>
+            <div class="form-group">
+                <input type="number" id="advanceAmountInput" placeholder="أدخل مبلغ السلفة (ل.س)" class="form-control">
+            </div>
+            <button onclick="requestAdvance()" class="btn-submit" style="background-color: var(--accent-indigo); color:#fff;">إرسال طلب السلفة للإدارة</button>
+        </div>
+
+        <div class="card">
+            <div class="card-header">💬 التواصل مع الإدارة</div>
+            <div id="chatMessagesBox" style="background:#0f172a; border:1px solid var(--border-color); border-radius:8px; padding:8px; height:100px; overflow-y:auto; font-size:10px; margin-bottom:8px;"></div>
+            <div style="display:flex; gap:6px;">
+                <input type="text" id="driverNoteInput" placeholder="اكتب رسالتك للإدارة..." class="form-control" style="margin-bottom:0;">
+                <button onclick="sendDriverNote()" class="btn-submit" style="width:auto; margin:0; padding:8px 12px; background:var(--accent-indigo); color:#fff;">إرسال</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "REPLACE_WITH_TEST_FIREBASE_API_KEY",
+            authDomain: "REPLACE_WITH_TEST_PROJECT.firebaseapp.com",
+            projectId: "REPLACE_WITH_TEST_PROJECT_ID",
+            storageBucket: "REPLACE_WITH_TEST_PROJECT.firebasestorage.app",
+            messagingSenderId: "REPLACE_WITH_TEST_MESSAGING_SENDER_ID",
+            appId: "REPLACE_WITH_TEST_APP_ID",
+            databaseURL: "https://REPLACE_WITH_TEST_DATABASE_URL"
+        };
+
+        if (firebaseConfig.apiKey.startsWith("REPLACE_WITH_") || firebaseConfig.projectId.startsWith("REPLACE_WITH_") || firebaseConfig.databaseURL.includes("REPLACE_WITH_")) {
+            const panel = document.createElement('main');
+            panel.dir = 'rtl';
+            panel.style.cssText = 'max-width:720px;margin:12vh auto;padding:28px;font:16px/1.9 Arial,sans-serif;text-align:center;background:#fff;border:1px solid #ddd;border-radius:16px;color:#222;';
+            const heading = document.createElement('h2');
+            heading.textContent = 'بيئة الاختبار غير مهيأة بعد';
+            const message = document.createElement('p');
+            message.textContent = 'هذه نسخة تجريبية معزولة. لم يتم ربطها بقاعدة البيانات الحقيقية. يجب إدخال إعدادات مشروع Firebase تجريبي مستقل قبل تسجيل الدخول أو إجراء أي اختبار.';
+            const note = document.createElement('p');
+            note.textContent = 'لا تضع إعدادات مشروع MT TAXI الأساسي هنا.';
+            panel.append(heading, message, note);
+            document.body.replaceChildren(panel);
+            throw new Error('Test Firebase configuration is required; production database connection is disabled.');
+        }
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let currentDriver = JSON.parse(localStorage.getItem('mt_current_driver') || 'null');
+        let allCarsData = [];
+        let uploadedStartImg = "";
+        let uploadedEndImg = "";
+        let globalHourlyRate = 8500;
+
+        db.ref('settings/hourlyRate').on('value', (snap) => {
+            if (snap.exists()) globalHourlyRate = Number(snap.val()) || 8500;
+        });
+
+        db.ref('cars').on('value', (snapshot) => {
+            allCarsData = snapshot.val() ? Object.values(snapshot.val()) : [];
+            populateDriverSelect();
+            if (currentDriver) checkActiveShiftState();
+        });
+
+        function populateDriverSelect() {
+            const select = document.getElementById('driverSelect');
+            if (!select) return;
+            const driversList = [];
+            allCarsData.forEach(car => {
+                if (typeof car.dayDriver?.name === 'string' && car.dayDriver.name.trim()) driversList.push({ name: car.dayDriver.name, car: String(car.plate ?? ''), carId: String(car.id), shift: 'نهاري' });
+                if (typeof car.nightDriver?.name === 'string' && car.nightDriver.name.trim()) driversList.push({ name: car.nightDriver.name, car: String(car.plate ?? ''), carId: String(car.id), shift: 'ليلي' });
+            });
+            select.replaceChildren(new Option('اختر اسمك...', ''));
+            driversList.forEach(driver => {
+                const option = document.createElement('option');
+                option.value = JSON.stringify(driver);
+                option.textContent = `${driver.name} (${driver.car} - ${driver.shift})`;
+                select.appendChild(option);
+            });
+        }
+
+        if (currentDriver) {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('driverDashboard').style.display = 'block';
+            document.getElementById('driverWelcomeTitle').innerText = `مرحباً: ${currentDriver.name} (${currentDriver.car})`;
+            startDriverDataListeners();
+            checkActiveShiftState();
+        }
+
+        function driverLogin() {
+            const val = document.getElementById('driverSelect').value;
+            if (!val) {
+                alert("الرجاء اختيار اسم السائق.");
+                return;
+            }
+            currentDriver = JSON.parse(val);
+            localStorage.setItem('mt_current_driver', JSON.stringify(currentDriver));
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('driverDashboard').style.display = 'block';
+            document.getElementById('driverWelcomeTitle').innerText = `مرحباً: ${currentDriver.name} (${currentDriver.car})`;
+            startDriverDataListeners();
+            checkActiveShiftState();
+        }
+
+        function driverLogout() {
+            localStorage.removeItem('mt_current_driver');
+            currentDriver = null;
+            location.reload();
+        }
+
+        function localDateKey(dateObj = new Date()) {
+            const d = new Date(dateObj);
+            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        }
+
+        function getSaturdayWeekId(dateObj = new Date()) {
+            const d = new Date(dateObj);
+            const day = d.getDay();
+            let diff = (day >= 6) ? (day - 6) : (day + 1);
+            d.setDate(d.getDate() - diff);
+            return `${d.getFullYear()}-W_Sat_${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+
+        function handleImageUpload(event, type) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+            if (!file.type.startsWith('image/')) { alert('الملف المحدد ليس صورة.'); event.target.value = ''; return; }
+            if (file.size > 12 * 1024 * 1024) { alert('حجم الصورة كبير جداً. الحد الأقصى قبل الضغط 12MB.'); event.target.value = ''; return; }
+            const reader = new FileReader();
+            reader.onerror = () => alert('تعذر قراءة الصورة. حاول مرة أخرى.');
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onerror = () => alert('تعذر معالجة الصورة المحددة.');
+                img.onload = function() {
+                    const maxSide = 1280;
+                    const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+                    const canvas = document.createElement('canvas');
+                    canvas.width = Math.max(1, Math.round(img.width * scale));
+                    canvas.height = Math.max(1, Math.round(img.height * scale));
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    let base64 = canvas.toDataURL('image/jpeg', 0.72);
+                    if (base64.length > 900000) base64 = canvas.toDataURL('image/jpeg', 0.55);
+                    if (base64.length > 900000) { alert('الصورة ما زالت كبيرة بعد الضغط. اختر صورة أصغر.'); return; }
+                    if (type === 'start') {
+                        uploadedStartImg = base64;
+                        document.getElementById('startFileLabel').innerText = '✅ تم ضغط صورة البداية وتجهيزها';
+                    } else {
+                        uploadedEndImg = base64;
+                        document.getElementById('endFileLabel').innerText = '✅ تم ضغط صورة النهاية وتجهيزها';
+                    }
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function resolveCurrentDriverCar() {
+            if (!currentDriver) return null;
+            if (currentDriver.carId !== undefined && currentDriver.carId !== null) {
+                return allCarsData.find(car => String(car.id) === String(currentDriver.carId)) || null;
+            }
+            const matches = allCarsData.filter(car => {
+                const samePlate = String(car.plate || '').trim() === String(currentDriver.car || '').trim();
+                const assigned = currentDriver.shift === 'نهاري'
+                    ? car.dayDriver?.name === currentDriver.name
+                    : currentDriver.shift === 'ليلي'
+                        ? car.nightDriver?.name === currentDriver.name
+                        : false;
+                return samePlate && assigned;
+            });
+            return matches.length === 1 ? matches[0] : null;
+        }
+
+        function checkActiveShiftState() {
+            if (!currentDriver) return;
+            const car = resolveCurrentDriverCar();
+            const startBox = document.getElementById('startShiftBox');
+            const activeBox = document.getElementById('activeShiftBox');
+            if (!car || car.id === undefined || car.id === null) {
+                if (startBox) startBox.style.display = 'none';
+                if (activeBox) activeBox.style.display = 'none';
+                return alert('تعذر مطابقة حسابك مع سيارة ووردية محددتين. أعد تسجيل الدخول بعد مراجعة لوحة الإدارة.');
+            }
+            db.ref(`activeShifts/${String(car.id)}`).once('value').then(snapshot => {
+                const shiftData = snapshot.val();
+                const valid = shiftData && shiftData.driver === currentDriver.name &&
+                    (!shiftData.shift || shiftData.shift === currentDriver.shift);
+                if (valid) {
+                    if (startBox) startBox.style.display = 'none';
+                    if (activeBox) activeBox.style.display = 'block';
+                    runLiveTimer(shiftData.timestamp);
+                } else {
+                    if (activeBox) activeBox.style.display = 'none';
+                    if (startBox) startBox.style.display = 'block';
+                }
+            }).catch(err => alert('تعذر التحقق من الوردية: ' + err.message));
+        }
+
+        function startShift() {
+            if (!currentDriver) return alert('يرجى تسجيل الدخول أولاً.');
+            if (!uploadedStartImg) return alert('الرجاء التقاط أو رفع صورة عداد بداية الوردية.');
+            const targetCar = resolveCurrentDriverCar();
+            if (!targetCar || targetCar.id === undefined || targetCar.id === null) return alert('تعذر تحديد السيارة والوردية المرتبطتين بحسابك. أعد تسجيل الدخول من القائمة.');
+            const carId = String(targetCar.id);
+            const startTime = Date.now();
+            const weekId = getSaturdayWeekId(new Date(startTime));
+            const dateKey = localDateKey(new Date(startTime));
+            const shiftInfo = { driver: currentDriver.name, car: currentDriver.car, carId, shift: currentDriver.shift || null, timestamp: startTime, odoStartImg: uploadedStartImg, status: 'active' };
+            db.ref(`activeShifts/${carId}`).transaction(current => current === null ? shiftInfo : undefined)
+                .then(result => {
+                    if (!result.committed) return alert('هذه السيارة لديها وردية نشطة بالفعل. حدّث الصفحة وتحقق من حالة الوردية.');
+                    const updates = {};
+                    updates[`weeklyRecords/${weekId}/${currentDriver.name}/days/${dateKey}`] = {
+                        startTime, status: 'present', odoStartImg: uploadedStartImg
+                    };
+                    updates[`weeklyRecords/${weekId}/${currentDriver.name}/odoStartImg`] = uploadedStartImg;
+                    updates[`weeklyRecords/${weekId}/${currentDriver.name}/odoStartTimestamp`] = startTime;
+                    return db.ref().update(updates).then(() => {
+                        uploadedStartImg = '';
+                        document.getElementById('startOdoFile').value = '';
+                        document.getElementById('startShiftBox').style.display = 'none';
+                        document.getElementById('activeShiftBox').style.display = 'block';
+                        runLiveTimer(startTime);
+                        alert('تم بدء الوردية وتسجيل العداد بنجاح.');
+                    }).catch(err => {
+                        alert('تم تسجيل الوردية، لكن تعذر حفظ تفاصيل اليوم: ' + err.message + ' — لا تبدأ وردية أخرى قبل مراجعة الحالة.');
+                    });
+                }).catch(err => alert('تعذر بدء الوردية: ' + err.message));
+        }
+
+
+        // Apply a shift's financial effect once per week. The marker and totals
+        // are committed in the same transaction, so retries cannot add hours twice.
+        async function applyShiftHoursOnce(driverName, carId, startTime, endTime, shiftData, includeEndOdometer) {
+            const safeCarId = String(carId).split('').map(ch => '.#$ /[]'.includes(ch) ? '_' : ch).join('');
+            const shiftId = 'shift_' + safeCarId + '_' + startTime;
+            const totals = {};
+            let cursor = startTime;
+            while (cursor < endTime) {
+                const day = new Date(cursor);
+                const nextDay = new Date(day.getFullYear(), day.getMonth(), day.getDate() + 1).getTime();
+                const segmentEnd = Math.min(endTime, nextDay);
+                const week = getSaturdayWeekId(new Date(cursor));
+                const dayKey = localDateKey(new Date(cursor));
+                if (!totals[week]) totals[week] = {};
+                totals[week][dayKey] = (totals[week][dayKey] || 0) + (segmentEnd - cursor) / 3600000;
+                cursor = segmentEnd;
+            }
+
+            const endWeek = getSaturdayWeekId(new Date(endTime));
+            const endDay = localDateKey(new Date(endTime));
+            if (!totals[endWeek]) totals[endWeek] = {};
+            await Promise.all(Object.entries(totals).map(([weekId, days]) => {
+                const recordRef = db.ref(`weeklyRecords/${weekId}/${driverName}`);
+                return recordRef.transaction(current => {
+                    const record = current || {};
+                    if (record.processedShiftIds && record.processedShiftIds[shiftId]) return;
+                    const next = { ...record };
+                    next.processedShiftIds = { ...(record.processedShiftIds || {}), [shiftId]: true };
+                    const weekHours = Object.values(days).reduce((sum, value) => sum + value, 0);
+                    next.hours = (Number(record.hours) || 0) + weekHours;
+                    const todayHours = days[endDay] || 0;
+                    if (todayHours) next.todayHours = (Number(record.todayHours) || 0) + todayHours;
+                    next.days = { ...(record.days || {}) };
+                    Object.entries(days).forEach(([dayKey, hours]) => {
+                        const dayRecord = { ...(next.days[dayKey] || {}) };
+                        const dayStart = new Date(dayKey + 'T00:00:00');
+                        const nextMidnight = new Date(dayStart.getFullYear(), dayStart.getMonth(), dayStart.getDate() + 1).getTime();
+                        dayRecord.endTime = Math.min(endTime, nextMidnight);
+                        dayRecord.hours = hours;
+                        dayRecord.status = 'present';
+                        if (dayKey === localDateKey(new Date(startTime))) {
+                            dayRecord.startTime = startTime;
+                            if (shiftData.odoStartImg) dayRecord.odoStartImg = shiftData.odoStartImg;
+                        }
+                        if (includeEndOdometer && dayKey === endDay && shiftData.endOdoImg) dayRecord.odoEndImg = shiftData.endOdoImg;
+                        next.days[dayKey] = dayRecord;
+                    });
+                    if (!next.days[endDay]) {
+                        const endingDay = { ...(next.days[endDay] || {}) };
+                        endingDay.endTime = endTime;
+                        if (includeEndOdometer && shiftData.endOdoImg) endingDay.odoEndImg = shiftData.endOdoImg;
+                        next.days[endDay] = endingDay;
+                    }
+                    if (Object.prototype.hasOwnProperty.call(days, localDateKey(new Date(startTime)))) {
+                        next.odoStartImg = shiftData.odoStartImg || '';
+                        next.odoStartTimestamp = startTime;
+                    }
+                    if (weekId === endWeek) {
+                        next.lastShiftStart = startTime;
+                        next.lastShiftEnd = endTime;
+                        if (includeEndOdometer) {
+                            next.odoEndImg = shiftData.endOdoImg || '';
+                            next.odoEndTimestamp = endTime;
+                        }
+                    }
+                    return next;
+                }).then(result => {
+                    if (!result.committed) {
+                        const value = result.snapshot && result.snapshot.val();
+                        if (!value || !value.processedShiftIds || value.processedShiftIds[shiftId] !== true) {
+                            throw new Error('تعذر تثبيت سجل ساعات الوردية للأسبوع ' + weekId);
+                        }
+                    }
+                });
+            }));
+
+            // Clear only the exact shift that was finalized; never clear a newer shift.
+            const clearResult = await db.ref(`activeShifts/${carId}`).transaction(current => {
+                if (!current || Number(current.timestamp) !== startTime || current.driver !== driverName) return;
+                return null;
+            });
+            if (!clearResult.committed && clearResult.snapshot && clearResult.snapshot.exists()) {
+                throw new Error('تم حفظ الساعات، لكن تغيرت حالة السيارة قبل تحرير الوردية. راجع الحالة قبل أي إجراء يدوي.');
+            }
+            return shiftId;
+        }
+
+        let endingShift = false;
+        function endShift() {
+            if (endingShift) return;
+            if (!currentDriver) return alert('يرجى تسجيل الدخول أولاً.');
+            endingShift = true;
+            const car = resolveCurrentDriverCar();
+            if (!car || car.id === undefined || car.id === null) { endingShift = false; return alert('تعذر تحديد السيارة المرتبطة بحسابك. أعد تسجيل الدخول.'); }
+            const carId = String(car.id);
+            db.ref(`activeShifts/${carId}`).once('value').then(snapshot => {
+                const shift = snapshot.val();
+                if (!shift || shift.driver !== currentDriver.name || (shift.shift && shift.shift !== currentDriver.shift)) {
+                    throw new Error('لم يتم العثور على وردية نشطة مطابقة لسيارتك ووردّيتك.');
+                }
+                const startTime = Number(shift.timestamp);
+                const requestedEndTime = Date.now();
+                if (!startTime || requestedEndTime <= startTime) throw new Error('بيانات وقت الوردية غير صحيحة.');
+                const endTime = shift.status === 'finalizing' ? Number(shift.endTime) : requestedEndTime;
+                if (!endTime || endTime <= startTime) throw new Error('وقت إنهاء الوردية المحفوظ غير صحيح.');
+                if (shift.status !== 'finalizing' && !uploadedEndImg) throw new Error('الرجاء التقاط أو رفع صورة عداد نهاية الوردية.');
+                if (shift.status === 'finalizing' && shift.finalizedBy !== 'driver') throw new Error('بدأت الإدارة إنهاء هذه الوردية. انتظر تحديث الحالة.');
+                const endImage = shift.status === 'finalizing' ? (shift.endOdoImg || '') : uploadedEndImg;
+                const finalizationToken = `${Date.now()}-${Math.random()}`;
+                return db.ref(`activeShifts/${carId}`).transaction(current => {
+                    if (!current || current.driver !== currentDriver.name || Number(current.timestamp) !== startTime ||
+                        (current.shift && current.shift !== currentDriver.shift)) return;
+                    if (current.status === 'finalizing') {
+                        const stale = Date.now() - Number(current.finalizingAt || 0) > 120000;
+                        if (current.finalizedBy !== 'driver' || !stale) return;
+                        return { ...current, finalizingAt: Date.now(), finalizationToken };
+                    }
+                    return { ...current, status: 'finalizing', finalizedBy: 'driver', finalizingAt: Date.now(), finalizationToken, endTime, endOdoImg: endImage };
+                }).then(claim => {
+                    if (!claim.committed || claim.snapshot.val()?.finalizationToken !== finalizationToken) throw new Error('الوردية قيد الإنهاء من جهاز آخر. انتظر ثم أعد المحاولة إذا بقيت عالقة.');
+                    const finalShift = claim.snapshot.val();
+                    return applyShiftHoursOnce(currentDriver.name, carId, startTime, Number(finalShift.endTime), finalShift, true);
+                }).then(() => {
+                    uploadedEndImg = '';
+                    endingShift = false;
+                    alert('تم إنهاء الوردية وتوزيع ساعاتها على الأيام والأسابيع الصحيحة.');
+                    location.reload();
+                });
+            }).catch(err => { endingShift = false; alert('تعذر إنهاء الوردية: ' + err.message); });
+        }
+
+        let timerInterval = null;
+        function runLiveTimer(startTimestamp) {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                const now = Date.now();
+                const diff = Math.max(0, Math.floor((now - startTimestamp) / 1000));
+                const h = Math.floor(diff / 3600);
+                const m = Math.floor((diff % 3600) / 60);
+                const s = diff % 60;
+                const el = document.getElementById('liveTimer');
+                if (el) {
+                    el.innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+                }
+            }, 1000);
+        }
+
+
+        function requestAdvance() {
+            const amount = Number(document.getElementById('advanceAmountInput').value);
+            if (!Number.isFinite(amount) || amount <= 0 || !Number.isInteger(amount)) return alert('أدخل مبلغاً صحيحاً موجباً دون كسور.');
+            if (!currentDriver) return alert('يرجى تسجيل الدخول أولاً.');
+            const weekId = getSaturdayWeekId();
+            const requestsRef = db.ref(`pendingAdvances/${weekId}`);
+            const requestRef = requestsRef.push();
+            const newRequest = { driver: currentDriver.name, amount, timestamp: Date.now(), status: 'pending' };
+            requestsRef.transaction(current => {
+                const requests = current || {};
+                const alreadyPending = Object.values(requests).some(r =>
+                    r && r.driver === currentDriver.name && ['pending', 'approving'].includes(r.status)
+                );
+                if (alreadyPending) return;
+                return { ...requests, [requestRef.key]: newRequest };
+            }).then(result => {
+                if (!result.committed) return alert('لديك طلب سلفة قيد المراجعة بالفعل. انتظر قرار الإدارة.');
+                document.getElementById('advanceAmountInput').value = '';
+                alert('تم إرسال طلب السلفة. لن يُضاف إلى رصيدك إلا بعد موافقة الإدارة.');
+            }).catch(err => alert('تعذر إرسال طلب السلفة: ' + err.message));
+        }
+
+        function sendDriverNote() {
+            const input = document.getElementById('driverNoteInput');
+            const text = input.value.trim();
+            if (!text) return;
+            db.ref(`notes/${currentDriver.name}`).push({
+                sender: currentDriver.name,
+                text: text,
+                timestamp: Date.now()
+            }).then(() => {
+                input.value = "";
+            });
+        }
+
+        function startDriverDataListeners() {
+            if (!currentDriver) return;
+            const weekId = getSaturdayWeekId();
+
+            db.ref(`weeklyRecords/${weekId}/${currentDriver.name}`).on('value', (snap) => {
+                const data = snap.val() || {};
+                const totalHours = Number(data.hours) || 0;
+                const todayHours = Number(data.todayHours) || 0;
+                const advances = Number(data.advances) || 0;
+                const driverRate = data.customHourlyRate !== undefined ? Number(data.customHourlyRate) : globalHourlyRate;
+                const estimatedSalary = totalHours * driverRate;
+
+                const todayEl = document.getElementById('todayHoursVal');
+                const weekEl = document.getElementById('weekHoursVal');
+                const salaryEl = document.getElementById('salaryVal');
+                const advanceEl = document.getElementById('advanceVal');
+
+                if (todayEl) todayEl.innerText = `${todayHours.toFixed(1)} س`;
+                if (weekEl) weekEl.innerText = `${totalHours.toFixed(1)} س`;
+                if (salaryEl) salaryEl.innerText = `${Math.round(estimatedSalary).toLocaleString()} ل.س`;
+                if (advanceEl) advanceEl.innerText = `${advances.toLocaleString()} ل.س`;
+            });
+
+            db.ref(`notes/${currentDriver.name}`).on('value', (snap) => {
+                const notes = snap.val() || {};
+                const box = document.getElementById('chatMessagesBox');
+                if (box) {
+                    box.replaceChildren();
+                    const entries = Object.values(notes).slice(-100);
+                    if (!entries.length) {
+                        const empty = document.createElement('p'); empty.style.cssText = 'color:var(--text-sub);text-align:center;'; empty.textContent = 'لا توجد رسائل سابقة.'; box.appendChild(empty);
+                    } else entries.forEach(n => {
+                        const row = document.createElement('div'); row.style.cssText = 'margin-bottom:4px;border-bottom:1px solid rgba(51,65,85,0.4);padding-bottom:2px;';
+                        const sender = document.createElement('b'); sender.style.color = n.sender === 'الإدارة' ? 'var(--accent-amber)' : 'var(--accent-green)'; sender.textContent = String(n.sender || '');
+                        row.append(sender, document.createTextNode(': ' + String(n.text || ''))); box.appendChild(row);
+                    });
+                    box.scrollTop = box.scrollHeight;
+                }
+            });
+        }
+    </script>
+</body>
+</html>
