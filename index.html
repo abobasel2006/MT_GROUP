@@ -343,13 +343,18 @@
                     endingShift = false;
                     return alert('بدأت الإدارة إنهاء هذه الوردية. انتظر تحديث الحالة.');
                 }
+                const finalizationToken = `${Date.now()}-${Math.random()}`;
                 return db.ref(`activeShifts/${carId}`).transaction(current => {
                     if (!current || current.driver !== currentDriver.name || Number(current.timestamp) !== startTime ||
                         (current.shift && current.shift !== currentDriver.shift)) return;
-                    if (current.status === 'finalizing') return current.finalizedBy === 'driver' ? current : undefined;
-                    return { ...current, status: 'finalizing', finalizedBy: 'driver', endTime, endOdoImg: endImage };
+                    if (current.status === 'finalizing') {
+                        const stale = Date.now() - Number(current.finalizingAt || 0) > 120000;
+                        if (current.finalizedBy !== 'driver' || !stale) return;
+                        return { ...current, finalizingAt: Date.now(), finalizationToken };
+                    }
+                    return { ...current, status: 'finalizing', finalizedBy: 'driver', finalizingAt: Date.now(), finalizationToken, endTime, endOdoImg: endImage };
                 }).then(claim => {
-                    if (!claim.committed) throw new Error('الوردية تغيرت أثناء محاولة إنهائها.');
+                    if (!claim.committed || claim.snapshot.val()?.finalizationToken !== finalizationToken) throw new Error('الوردية قيد الإنهاء من جهاز آخر. انتظر دقيقتين ثم أعد المحاولة إذا بقيت عالقة.');
                     return { shift: claim.snapshot.val(), endTime: Number(claim.snapshot.val().endTime), endImage: claim.snapshot.val().endOdoImg };
                 }).then(finalized => {
                 const endTime = finalized.endTime;
