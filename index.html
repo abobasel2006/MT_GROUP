@@ -376,6 +376,12 @@
                     updates[`weeklyRecords/${week}/${currentDriver.name}/days/${dayKey}/endTime`] = Math.min(endTime, nextMidnight);
                     updates[`weeklyRecords/${week}/${currentDriver.name}/days/${dayKey}/hours`] = hours;
                     updates[`weeklyRecords/${week}/${currentDriver.name}/days/${dayKey}/status`] = 'present';
+                    if (dayKey === localDateKey(new Date(startTime))) {
+                        updates[`weeklyRecords/${week}/${currentDriver.name}/days/${dayKey}/startTime`] = startTime;
+                        if (shift.odoStartImg) updates[`weeklyRecords/${week}/${currentDriver.name}/days/${dayKey}/odoStartImg`] = shift.odoStartImg;
+                        updates[`weeklyRecords/${week}/${currentDriver.name}/odoStartImg`] = shift.odoStartImg || '';
+                        updates[`weeklyRecords/${week}/${currentDriver.name}/odoStartTimestamp`] = startTime;
+                    }
                 }));
                 const endWeek = getSaturdayWeekId(new Date(endTime));
                 const endDay = localDateKey(new Date(endTime));
