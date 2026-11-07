@@ -1,19 +1,23 @@
-import { db, ref, onValue } from "./src/firebase.js";
-import { startShift, endShift } from "./src/domain/shift-service.js";
+import { auth, functions, signInWithCustomToken, signOut, setPersistence, browserSessionPersistence, httpsCallable } from "./src/firebase.js";
 
 const $ = selector => document.querySelector(selector);
 const sessionKey = "mt_current_driver";
 const loginPanel = $("#loginPanel");
 const dashboard = $("#dashboard");
 const select = $("#driverSelect");
+const pinInput = $("#driverPin");
 const loginButton = $("#loginButton");
-let fleet = { drivers: {}, cars: {} };
-let shifts = { activeByCar: {}, activeByDriver: {}, history: {} };
+const listDriverLoginOptions = httpsCallable(functions, "listDriverLoginOptions");
+const loginWithPin = httpsCallable(functions, "loginWithPin");
+const getMyActiveShift = httpsCallable(functions, "getMyActiveShift");
+const startShiftCall = httpsCallable(functions, "startShift");
+const endShiftCall = httpsCallable(functions, "endShift");
+let loginOptions = [];
 let currentDriver = null;
+let activeShift = null;
 let timerHandle = null;
 let busy = false;
 
-function safeText(value) { return String(value ?? ""); }
 function shiftLabel(type) { return type === "day" ? "نهارية" : "ليلية"; }
 function formatDate(value) {
   if (!Number.isFinite(Number(value))) return "—";
@@ -26,49 +30,36 @@ function formatDuration(start) {
   const s = String(seconds % 60).padStart(2, "0");
   return h + ":" + m + ":" + s;
 }
-function isStillAssigned() {
-  const driver = fleet.drivers?.[currentDriver?.driverId];
-  const car = fleet.cars?.[currentDriver?.carId];
-  const field = currentDriver?.shiftType === "day" ? "dayDriverId" : "nightDriverId";
-  return !!(driver?.active === true && car?.active === true && car[field] === currentDriver.driverId);
-}
-function activeShiftFor(driverId) {
-  const id = shifts.activeByDriver?.[driverId];
-  return id ? shifts.history?.[id] || null : null;
-}
 function renderSelect() {
   const previous = select.value;
   select.replaceChildren(new Option("اختر اسمك...", ""));
-  const options = [];
-  for (const [carId, car] of Object.entries(fleet.cars || {})) {
-    if (!car || car.active !== true) continue;
-    for (const type of ["day", "night"]) {
-      const driverId = car[type === "day" ? "dayDriverId" : "nightDriverId"];
-      const driver = driverId ? fleet.drivers?.[driverId] : null;
-      if (!driver || driver.active !== true) continue;
-      options.push({ driverId, carId, shiftType: type, driverName: driver.name, plate: car.plate });
-    }
-  }
-  options.sort((a,b) => a.driverName.localeCompare(b.driverName, "ar"));
-  for (const item of options) {
-    const option = new Option(`${item.driverName} — ${item.plate || "سيارة"} — ${shiftLabel(item.shiftType)}`, JSON.stringify(item));
+  for (const item of loginOptions) {
+    const option = new Option(
+      item.driverName + " — " + (item.plate || "سيارة") + " — الوردية " + shiftLabel(item.shiftType),
+      JSON.stringify(item)
+    );
     select.add(option);
   }
   if ([...select.options].some(option => option.value === previous)) select.value = previous;
-  loginButton.disabled = options.length === 0;
-  if (!options.length) $("#loginStatus").textContent = "لا توجد تعيينات نشطة للسائقين حتى الآن.";
-  else $("#loginStatus").textContent = "تم تحميل قائمة السائقين من قاعدة MT TAXI 2.0.";
+  updateLoginButton();
+  $("#loginStatus").textContent = loginOptions.length
+    ? "اختر اسمك وأدخل رمز PIN المكوّن من أربعة أرقام."
+    : "لا توجد تعيينات نشطة للسائقين حالياً.";
+}
+function updateLoginButton() {
+  loginButton.disabled = busy || !select.value || !/^\d{4}$/.test(pinInput.value);
 }
 function persistSession() {
   localStorage.setItem(sessionKey, JSON.stringify(currentDriver));
 }
+function activeShiftFor(driverId) {
+  return currentDriver?.driverId === driverId ? activeShift : null;
+}
 function showDashboard() {
   loginPanel.hidden = true;
   dashboard.hidden = false;
-  const driver = fleet.drivers?.[currentDriver.driverId];
-  const car = fleet.cars?.[currentDriver.carId];
-  $("#welcome").textContent = driver?.name || currentDriver.driverName || "السائق";
-  $("#assignment").textContent = `${car?.plate || currentDriver.plate || "السيارة"} — الوردية ${shiftLabel(currentDriver.shiftType)}`;
+  $("#welcome").textContent = currentDriver.driverName || "السائق";
+  $("#assignment").textContent = (currentDriver.plate || "السيارة") + " — الوردية " + shiftLabel(currentDriver.shiftType);
   renderShift();
 }
 function renderShift() {
@@ -93,32 +84,73 @@ function renderShift() {
     $("#shiftState").textContent = "لا توجد وردية نشطة على حسابك.";
   }
 }
+async function refreshActiveShift() {
+  const result = await getMyActiveShift();
+  activeShift = result.data?.shift || null;
+  renderShift();
+}
 function setBusy(value) {
   busy = value;
   $("#startButton").disabled = value;
   $("#endButton").disabled = value;
   $("#startButton").textContent = value ? "جارٍ التنفيذ..." : "بدء الوردية";
   $("#endButton").textContent = value ? "جارٍ التنفيذ..." : "إنهاء الوردية";
+  updateLoginButton();
 }
 
-loginButton.addEventListener("click", () => {
-  if (!select.value) return;
+async function loadLoginOptions() {
   try {
-    currentDriver = JSON.parse(select.value);
+    const result = await listDriverLoginOptions();
+    loginOptions = Array.isArray(result.data?.options) ? result.data.options : [];
+    renderSelect();
+  } catch (error) {
+    $("#loginStatus").textContent = "تعذر تحميل قائمة السائقين. تحقق من إعدادات Firebase.";
+    console.error("listDriverLoginOptions:", error);
+  }
+}
+
+loginButton.addEventListener("click", async () => {
+  if (!select.value || !/^\d{4}$/.test(pinInput.value) || busy) return;
+  let selected;
+  try { selected = JSON.parse(select.value); }
+  catch { $("#loginStatus").textContent = "تعذر قراءة اختيار السائق."; return; }
+  busy = true;
+  updateLoginButton();
+  $("#loginStatus").textContent = "جارٍ التحقق من رمز PIN...";
+  try {
+    const result = await loginWithPin({ driverId: selected.driverId, pin: pinInput.value });
+    await setPersistence(auth, browserSessionPersistence);
+    await signInWithCustomToken(auth, result.data.token);
+    const token = await auth.currentUser.getIdTokenResult(true);
+    if (token.claims.role !== "driver" || token.claims.driverId !== selected.driverId) {
+      throw new Error("تعذر مطابقة هوية السائق الموثوقة.");
+    }
+    currentDriver = selected;
+    pinInput.value = "";
     persistSession();
+    await refreshActiveShift();
     showDashboard();
   } catch (error) {
-    $("#loginStatus").textContent = "تعذر قراءة اختيار السائق. أعد المحاولة.";
+    $("#loginStatus").textContent = error.message || "رمز PIN غير صحيح أو تعذر تسجيل الدخول.";
+    console.error("driver login:", error);
+  } finally {
+    busy = false;
+    updateLoginButton();
   }
 });
-$("#logoutButton").addEventListener("click", () => {
+pinInput.addEventListener("input", updateLoginButton);
+$("#logoutButton").addEventListener("click", async () => {
+  try { await signOut(auth); } catch (error) { console.error(error); }
   localStorage.removeItem(sessionKey);
   currentDriver = null;
+  activeShift = null;
   if (timerHandle) clearInterval(timerHandle);
   timerHandle = null;
   dashboard.hidden = true;
   loginPanel.hidden = false;
+  $("#shiftState").textContent = "تم تسجيل الخروج.";
 });
+
 $("#startButton").addEventListener("click", async () => {
   if (busy || !currentDriver) return;
   const raw = $("#startOdometer").value.trim();
@@ -126,14 +158,16 @@ $("#startButton").addEventListener("click", async () => {
   if (odometer !== null && (!Number.isFinite(odometer) || odometer < 0)) return alert("أدخل قراءة عداد صحيحة.");
   setBusy(true);
   try {
-    await startShift({ driverId: currentDriver.driverId, carId: currentDriver.carId, shiftType: currentDriver.shiftType, startOdometer: odometer });
+    activeShift = (await startShiftCall({
+      carId: currentDriver.carId, shiftType: currentDriver.shiftType, startOdometer: odometer
+    })).data;
     $("#startOdometer").value = "";
     $("#shiftState").textContent = "تم بدء الوردية.";
   } catch (error) {
     alert(error.message || "تعذر بدء الوردية.");
   } finally {
     setBusy(false);
-    renderShift();
+    await refreshActiveShift().catch(error => console.error(error));
   }
 });
 $("#endButton").addEventListener("click", async () => {
@@ -147,39 +181,37 @@ $("#endButton").addEventListener("click", async () => {
   if (!confirm("هل تريد إنهاء الوردية الآن؟")) return;
   setBusy(true);
   try {
-    await endShift({ shiftId: active.shiftId, driverId: currentDriver.driverId, endOdometer: odometer });
+    await endShiftCall({ shiftId: active.shiftId, endOdometer: odometer });
+    activeShift = null;
     $("#endOdometer").value = "";
     $("#shiftState").textContent = "تم إنهاء الوردية بنجاح.";
   } catch (error) {
     alert(error.message || "تعذر إنهاء الوردية.");
   } finally {
     setBusy(false);
-    renderShift();
+    await refreshActiveShift().catch(error => console.error(error));
   }
 });
 
-onValue(ref(db, "fleetState"), snapshot => {
-  fleet = snapshot.val() || { drivers: {}, cars: {} };
-  renderSelect();
-  if (currentDriver) showDashboard();
-}, error => {
-  $("#loginStatus").textContent = "تعذر قراءة بيانات الأسطول. تحقق من قواعد Firebase قبل تشغيل النسخة.";
-  console.error("fleetState listener:", error);
-});
-onValue(ref(db, "shiftState"), snapshot => {
-  shifts = snapshot.val() || { activeByCar: {}, activeByDriver: {}, history: {} };
-  if (currentDriver) renderShift();
-}, error => {
-  $("#shiftState").textContent = "تعذر قراءة حالة الورديات؛ قواعد Firebase قد تمنع الوصول.";
-  console.error("shiftState listener:", error);
-});
-
-try {
-  const saved = JSON.parse(localStorage.getItem(sessionKey) || "null");
-  if (saved?.driverId && saved?.carId && ["day", "night"].includes(saved.shiftType)) {
+async function restoreSession() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(sessionKey) || "null");
+    if (!saved?.driverId || !saved?.carId || !["day", "night"].includes(saved.shiftType) || !auth.currentUser) return;
+    const token = await auth.currentUser.getIdTokenResult(true);
+    if (token.claims.role !== "driver" || token.claims.driverId !== saved.driverId) {
+      await signOut(auth);
+      localStorage.removeItem(sessionKey);
+      return;
+    }
     currentDriver = saved;
+    await refreshActiveShift();
     showDashboard();
+  } catch (error) {
+    console.error("restore driver session:", error);
+    localStorage.removeItem(sessionKey);
+    currentDriver = null;
   }
-} catch {
-  localStorage.removeItem(sessionKey);
 }
+
+await loadLoginOptions();
+await restoreSession();
