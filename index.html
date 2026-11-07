@@ -431,16 +431,17 @@
                 const endImage = shift.status === 'finalizing' ? (shift.endOdoImg || '') : uploadedEndImg;
                 const finalizationToken = `${Date.now()}-${Math.random()}`;
                 return db.ref(`activeShifts/${carId}`).transaction(current => {
-                    if (!current || current.driver !== currentDriver.name || Number(current.timestamp) !== startTime ||
+                    if (!current || current.driver !== currentDriver.name ||
+                        (getDriverShiftStartTime(current) && getDriverShiftStartTime(current) !== startTime) ||
                         (current.shift && current.shift !== currentDriver.shift)) return;
                     if (current.status === 'finalizing') {
                         // A stale finalization may be resumed by either authorized app flow.
                         // Keep the original endTime and odometer image; only take over the expired lease.
                         const stale = Date.now() - Number(current.finalizingAt || 0) > 120000;
                         if (!stale) return;
-                        return { ...current, finalizingAt: Date.now(), finalizationToken };
+                        return { ...current, timestamp: startTime, finalizingAt: Date.now(), finalizationToken };
                     }
-                    return { ...current, status: 'finalizing', finalizedBy: 'driver', finalizingAt: Date.now(), finalizationToken, endTime, endOdoImg: endImage };
+                    return { ...current, timestamp: startTime, status: 'finalizing', finalizedBy: 'driver', finalizingAt: Date.now(), finalizationToken, endTime, endOdoImg: endImage };
                 }).then(claim => {
                     if (!claim.committed || claim.snapshot.val()?.finalizationToken !== finalizationToken) throw new Error('الوردية قيد الإنهاء من جهاز آخر. انتظر ثم أعد المحاولة إذا بقيت عالقة.');
                     const finalShift = claim.snapshot.val();
