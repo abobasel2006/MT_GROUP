@@ -151,14 +151,18 @@
         function populateDriverSelect() {
             const select = document.getElementById('driverSelect');
             if (!select) return;
-            let driversList = [];
+            const driversList = [];
             allCarsData.forEach(car => {
-                if (car.dayDriver?.name?.trim()) driversList.push({ name: car.dayDriver.name, car: car.plate, shift: 'نهاري' });
-                if (car.nightDriver?.name?.trim()) driversList.push({ name: car.nightDriver.name, car: car.plate, shift: 'ليلي' });
+                if (typeof car.dayDriver?.name === 'string' && car.dayDriver.name.trim()) driversList.push({ name: car.dayDriver.name, car: String(car.plate ?? ''), carId: String(car.id), shift: 'نهاري' });
+                if (typeof car.nightDriver?.name === 'string' && car.nightDriver.name.trim()) driversList.push({ name: car.nightDriver.name, car: String(car.plate ?? ''), carId: String(car.id), shift: 'ليلي' });
             });
-            select.innerHTML = `<option value="">اختر اسمك...</option>` + driversList.map(d => `
-                <option value='${JSON.stringify(d)}'>${d.name} (${d.car} - ${d.shift})</option>
-            `).join('');
+            select.replaceChildren(new Option('اختر اسمك...', ''));
+            driversList.forEach(driver => {
+                const option = document.createElement('option');
+                option.value = JSON.stringify(driver);
+                option.textContent = `${driver.name} (${driver.car} - ${driver.shift})`;
+                select.appendChild(option);
+            });
         }
 
         if (currentDriver) {
@@ -237,23 +241,38 @@
             reader.readAsDataURL(file);
         }
 
+        function resolveCurrentDriverCar() {
+            if (!currentDriver) return null;
+            if (currentDriver.carId !== undefined && currentDriver.carId !== null) {
+                return allCarsData.find(car => String(car.id) === String(currentDriver.carId)) || null;
+            }
+            const matches = allCarsData.filter(car => {
+                const samePlate = String(car.plate || '').trim() === String(currentDriver.car || '').trim();
+                const assigned = currentDriver.shift === 'نهاري'
+                    ? car.dayDriver?.name === currentDriver.name
+                    : currentDriver.shift === 'ليلي'
+                        ? car.nightDriver?.name === currentDriver.name
+                        : false;
+                return samePlate && assigned;
+            });
+            return matches.length === 1 ? matches[0] : null;
+        }
+
         function checkActiveShiftState() {
             if (!currentDriver) return;
-            db.ref('activeShifts').once('value').then((snapshot) => {
-                const activeShifts = snapshot.val() || {};
-                let shiftData = null;
-
-                Object.keys(activeShifts).forEach(carId => {
-                    const shift = activeShifts[carId];
-                    if (shift && shift.driver === currentDriver.name) {
-                        shiftData = shift;
-                    }
-                });
-
-                const startBox = document.getElementById('startShiftBox');
-                const activeBox = document.getElementById('activeShiftBox');
-
-                if (shiftData) {
+            const car = resolveCurrentDriverCar();
+            const startBox = document.getElementById('startShiftBox');
+            const activeBox = document.getElementById('activeShiftBox');
+            if (!car || car.id === undefined || car.id === null) {
+                if (startBox) startBox.style.display = 'none';
+                if (activeBox) activeBox.style.display = 'none';
+                return alert('تعذر مطابقة حسابك مع سيارة ووردية محددتين. أعد تسجيل الدخول بعد مراجعة لوحة الإدارة.');
+            }
+            db.ref(`activeShifts/${String(car.id)}`).once('value').then(snapshot => {
+                const shiftData = snapshot.val();
+                const valid = shiftData && shiftData.driver === currentDriver.name &&
+                    (!shiftData.shift || shiftData.shift === currentDriver.shift);
+                if (valid) {
                     if (startBox) startBox.style.display = 'none';
                     if (activeBox) activeBox.style.display = 'block';
                     runLiveTimer(shiftData.timestamp);
@@ -261,19 +280,19 @@
                     if (activeBox) activeBox.style.display = 'none';
                     if (startBox) startBox.style.display = 'block';
                 }
-            });
+            }).catch(err => alert('تعذر التحقق من الوردية: ' + err.message));
         }
 
         function startShift() {
             if (!currentDriver) return alert('يرجى تسجيل الدخول أولاً.');
             if (!uploadedStartImg) return alert('الرجاء التقاط أو رفع صورة عداد بداية الوردية.');
-            const targetCar = allCarsData.find(c => String(c.plate || '').trim() === String(currentDriver.car || '').trim());
-            if (!targetCar || targetCar.id === undefined || targetCar.id === null) return alert('تعذر تحديد السيارة المرتبطة بحسابك.');
+            const targetCar = resolveCurrentDriverCar();
+            if (!targetCar || targetCar.id === undefined || targetCar.id === null) return alert('تعذر تحديد السيارة والوردية المرتبطتين بحسابك. أعد تسجيل الدخول من القائمة.');
             const carId = String(targetCar.id);
             const startTime = Date.now();
             const weekId = getSaturdayWeekId(new Date(startTime));
             const dateKey = localDateKey(new Date(startTime));
-            const shiftInfo = { driver: currentDriver.name, car: currentDriver.car, timestamp: startTime, odoStartImg: uploadedStartImg };
+            const shiftInfo = { driver: currentDriver.name, car: currentDriver.car, carId, shift: currentDriver.shift || null, timestamp: startTime, odoStartImg: uploadedStartImg, status: 'active' };
             db.ref(`activeShifts/${carId}`).transaction(current => current === null ? shiftInfo : undefined)
                 .then(result => {
                     if (!result.committed) return alert('هذه السيارة لديها وردية نشطة بالفعل. حدّث الصفحة وتحقق من حالة الوردية.');
@@ -296,54 +315,129 @@
                 }).catch(err => alert('تعذر بدء الوردية: ' + err.message));
         }
 
+
+        // Apply a shift's financial effect once per week. The marker and totals
+        // are committed in the same transaction, so retries cannot add hours twice.
+        async function applyShiftHoursOnce(driverName, carId, startTime, endTime, shiftData, includeEndOdometer) {
+            const safeCarId = String(carId).split('').map(ch => '.#$ /[]'.includes(ch) ? '_' : ch).join('');
+            const shiftId = 'shift_' + safeCarId + '_' + startTime;
+            const totals = {};
+            let cursor = startTime;
+            while (cursor < endTime) {
+                const day = new Date(cursor);
+                const nextDay = new Date(day.getFullYear(), day.getMonth(), day.getDate() + 1).getTime();
+                const segmentEnd = Math.min(endTime, nextDay);
+                const week = getSaturdayWeekId(new Date(cursor));
+                const dayKey = localDateKey(new Date(cursor));
+                if (!totals[week]) totals[week] = {};
+                totals[week][dayKey] = (totals[week][dayKey] || 0) + (segmentEnd - cursor) / 3600000;
+                cursor = segmentEnd;
+            }
+
+            const endWeek = getSaturdayWeekId(new Date(endTime));
+            const endDay = localDateKey(new Date(endTime));
+            if (!totals[endWeek]) totals[endWeek] = {};
+            await Promise.all(Object.entries(totals).map(([weekId, days]) => {
+                const recordRef = db.ref(`weeklyRecords/${weekId}/${driverName}`);
+                return recordRef.transaction(current => {
+                    const record = current || {};
+                    if (record.processedShiftIds && record.processedShiftIds[shiftId]) return;
+                    const next = { ...record };
+                    next.processedShiftIds = { ...(record.processedShiftIds || {}), [shiftId]: true };
+                    const weekHours = Object.values(days).reduce((sum, value) => sum + value, 0);
+                    next.hours = (Number(record.hours) || 0) + weekHours;
+                    const todayHours = days[endDay] || 0;
+                    if (todayHours) next.todayHours = (Number(record.todayHours) || 0) + todayHours;
+                    next.days = { ...(record.days || {}) };
+                    Object.entries(days).forEach(([dayKey, hours]) => {
+                        const dayRecord = { ...(next.days[dayKey] || {}) };
+                        const dayStart = new Date(dayKey + 'T00:00:00');
+                        const nextMidnight = new Date(dayStart.getFullYear(), dayStart.getMonth(), dayStart.getDate() + 1).getTime();
+                        dayRecord.endTime = Math.min(endTime, nextMidnight);
+                        dayRecord.hours = hours;
+                        dayRecord.status = 'present';
+                        if (dayKey === localDateKey(new Date(startTime))) {
+                            dayRecord.startTime = startTime;
+                            if (shiftData.odoStartImg) dayRecord.odoStartImg = shiftData.odoStartImg;
+                        }
+                        if (includeEndOdometer && dayKey === endDay && shiftData.endOdoImg) dayRecord.odoEndImg = shiftData.endOdoImg;
+                        next.days[dayKey] = dayRecord;
+                    });
+                    if (!next.days[endDay]) {
+                        const endingDay = { ...(next.days[endDay] || {}) };
+                        endingDay.endTime = endTime;
+                        if (includeEndOdometer && shiftData.endOdoImg) endingDay.odoEndImg = shiftData.endOdoImg;
+                        next.days[endDay] = endingDay;
+                    }
+                    if (Object.prototype.hasOwnProperty.call(days, localDateKey(new Date(startTime)))) {
+                        next.odoStartImg = shiftData.odoStartImg || '';
+                        next.odoStartTimestamp = startTime;
+                    }
+                    if (weekId === endWeek) {
+                        next.lastShiftStart = startTime;
+                        next.lastShiftEnd = endTime;
+                        if (includeEndOdometer) {
+                            next.odoEndImg = shiftData.endOdoImg || '';
+                            next.odoEndTimestamp = endTime;
+                        }
+                    }
+                    return next;
+                }).then(result => {
+                    if (!result.committed) {
+                        const value = result.snapshot && result.snapshot.val();
+                        if (!value || !value.processedShiftIds || value.processedShiftIds[shiftId] !== true) {
+                            throw new Error('تعذر تثبيت سجل ساعات الوردية للأسبوع ' + weekId);
+                        }
+                    }
+                });
+            }));
+
+            // Clear only the exact shift that was finalized; never clear a newer shift.
+            const clearResult = await db.ref(`activeShifts/${carId}`).transaction(current => {
+                if (!current || Number(current.timestamp) !== startTime || current.driver !== driverName) return;
+                return null;
+            });
+            if (!clearResult.committed && clearResult.snapshot && clearResult.snapshot.exists()) {
+                throw new Error('تم حفظ الساعات، لكن تغيرت حالة السيارة قبل تحرير الوردية. راجع الحالة قبل أي إجراء يدوي.');
+            }
+            return shiftId;
+        }
+
         let endingShift = false;
         function endShift() {
             if (endingShift) return;
             if (!currentDriver) return alert('يرجى تسجيل الدخول أولاً.');
-            if (!uploadedEndImg) return alert('الرجاء التقاط أو رفع صورة عداد نهاية الوردية.');
             endingShift = true;
-            db.ref('activeShifts').once('value').then(snapshot => {
-                const shifts = snapshot.val() || {};
-                const found = Object.entries(shifts).find(([, sh]) => sh && sh.driver === currentDriver.name);
-                if (!found) { endingShift = false; return alert('لم يتم العثور على وردية نشطة مسجلة باسمك.'); }
-                const [carId, shift] = found;
-                const startTime = Number(shift.timestamp);
-                const endTime = Date.now();
-                if (!startTime || endTime <= startTime) { endingShift = false; return alert('بيانات وقت الوردية غير صحيحة.'); }
-                // Split elapsed time at local midnight and Saturday-week boundaries so each day/week receives its own hours.
-                const totals = {};
-                let cursor = startTime;
-                while (cursor < endTime) {
-                    const day = new Date(cursor);
-                    const nextDay = new Date(day.getFullYear(), day.getMonth(), day.getDate() + 1).getTime();
-                    const segmentEnd = Math.min(endTime, nextDay);
-                    const week = getSaturdayWeekId(new Date(cursor));
-                    const key = localDateKey(new Date(cursor));
-                    if (!totals[week]) totals[week] = {};
-                    totals[week][key] = (totals[week][key] || 0) + (segmentEnd - cursor) / 3600000;
-                    cursor = segmentEnd;
+            const car = resolveCurrentDriverCar();
+            if (!car || car.id === undefined || car.id === null) { endingShift = false; return alert('تعذر تحديد السيارة المرتبطة بحسابك. أعد تسجيل الدخول.'); }
+            const carId = String(car.id);
+            db.ref(`activeShifts/${carId}`).once('value').then(snapshot => {
+                const shift = snapshot.val();
+                if (!shift || shift.driver !== currentDriver.name || (shift.shift && shift.shift !== currentDriver.shift)) {
+                    throw new Error('لم يتم العثور على وردية نشطة مطابقة لسيارتك ووردّيتك.');
                 }
-                const updates = {};
-                Object.entries(totals).forEach(([week, days]) => Object.entries(days).forEach(([dayKey, hours]) => {
-                    updates[`weeklyRecords/${week}/${currentDriver.name}/hours`] = firebase.database.ServerValue.increment(hours);
-                    if (dayKey === localDateKey(new Date(endTime))) updates[`weeklyRecords/${week}/${currentDriver.name}/todayHours`] = firebase.database.ServerValue.increment(hours);
-                    updates[`weeklyRecords/${week}/${currentDriver.name}/days/${dayKey}/endTime`] = segmentEnd;
-                    updates[`weeklyRecords/${week}/${currentDriver.name}/days/${dayKey}/hours`] = hours;
-                    updates[`weeklyRecords/${week}/${currentDriver.name}/days/${dayKey}/status`] = 'present';
-                }));
-                const endWeek = getSaturdayWeekId(new Date(endTime));
-                const endDay = localDateKey(new Date(endTime));
-                updates[`weeklyRecords/${endWeek}/${currentDriver.name}/lastShiftStart`] = startTime;
-                updates[`weeklyRecords/${endWeek}/${currentDriver.name}/lastShiftEnd`] = endTime;
-                updates[`weeklyRecords/${endWeek}/${currentDriver.name}/odoEndImg`] = uploadedEndImg;
-                updates[`weeklyRecords/${endWeek}/${currentDriver.name}/odoEndTimestamp`] = endTime;
-                updates[`weeklyRecords/${endWeek}/${currentDriver.name}/days/${endDay}/odoEndImg`] = uploadedEndImg;
+                const startTime = Number(shift.timestamp);
+                const requestedEndTime = Date.now();
+                if (!startTime || requestedEndTime <= startTime) throw new Error('بيانات وقت الوردية غير صحيحة.');
+                const endTime = shift.status === 'finalizing' ? Number(shift.endTime) : requestedEndTime;
+                if (!endTime || endTime <= startTime) throw new Error('وقت إنهاء الوردية المحفوظ غير صحيح.');
+                if (shift.status !== 'finalizing' && !uploadedEndImg) throw new Error('الرجاء التقاط أو رفع صورة عداد نهاية الوردية.');
+                if (shift.status === 'finalizing' && shift.finalizedBy !== 'driver') throw new Error('بدأت الإدارة إنهاء هذه الوردية. انتظر تحديث الحالة.');
+                const endImage = shift.status === 'finalizing' ? (shift.endOdoImg || '') : uploadedEndImg;
+                const finalizationToken = `${Date.now()}-${Math.random()}`;
                 return db.ref(`activeShifts/${carId}`).transaction(current => {
-                    if (!current || current.driver !== currentDriver.name || Number(current.timestamp) !== startTime) return;
-                    return null;
+                    if (!current || current.driver !== currentDriver.name || Number(current.timestamp) !== startTime ||
+                        (current.shift && current.shift !== currentDriver.shift)) return;
+                    if (current.status === 'finalizing') {
+                        const stale = Date.now() - Number(current.finalizingAt || 0) > 120000;
+                        if (current.finalizedBy !== 'driver' || !stale) return;
+                        return { ...current, finalizingAt: Date.now(), finalizationToken };
+                    }
+                    return { ...current, status: 'finalizing', finalizedBy: 'driver', finalizingAt: Date.now(), finalizationToken, endTime, endOdoImg: endImage };
                 }).then(claim => {
-                    if (!claim.committed) throw new Error('تم إنهاء الوردية أو تغييرها من جهاز آخر.');
-                    return db.ref().update(updates);
+                    if (!claim.committed || claim.snapshot.val()?.finalizationToken !== finalizationToken) throw new Error('الوردية قيد الإنهاء من جهاز آخر. انتظر ثم أعد المحاولة إذا بقيت عالقة.');
+                    const finalShift = claim.snapshot.val();
+                    return applyShiftHoursOnce(currentDriver.name, carId, startTime, Number(finalShift.endTime), finalShift, true);
                 }).then(() => {
                     uploadedEndImg = '';
                     endingShift = false;
@@ -369,21 +463,26 @@
             }, 1000);
         }
 
+
         function requestAdvance() {
             const amount = Number(document.getElementById('advanceAmountInput').value);
             if (!Number.isFinite(amount) || amount <= 0 || !Number.isInteger(amount)) return alert('أدخل مبلغاً صحيحاً موجباً دون كسور.');
             if (!currentDriver) return alert('يرجى تسجيل الدخول أولاً.');
             const weekId = getSaturdayWeekId();
             const requestsRef = db.ref(`pendingAdvances/${weekId}`);
-            requestsRef.once('value').then(snap => {
-                const requests = snap.val() || {};
-                const alreadyPending = Object.values(requests).some(r => r && r.driver === currentDriver.name && r.status === 'pending');
-                if (alreadyPending) return alert('لديك طلب سلفة قيد المراجعة بالفعل. انتظر قرار الإدارة.');
-                const requestRef = requestsRef.push();
-                return requestRef.set({ driver: currentDriver.name, amount, timestamp: Date.now(), status: 'pending' }).then(() => {
-                    document.getElementById('advanceAmountInput').value = '';
-                    alert('تم إرسال طلب السلفة. لن يُضاف إلى رصيدك إلا بعد موافقة الإدارة.');
-                });
+            const requestRef = requestsRef.push();
+            const newRequest = { driver: currentDriver.name, amount, timestamp: Date.now(), status: 'pending' };
+            requestsRef.transaction(current => {
+                const requests = current || {};
+                const alreadyPending = Object.values(requests).some(r =>
+                    r && r.driver === currentDriver.name && ['pending', 'approving'].includes(r.status)
+                );
+                if (alreadyPending) return;
+                return { ...requests, [requestRef.key]: newRequest };
+            }).then(result => {
+                if (!result.committed) return alert('لديك طلب سلفة قيد المراجعة بالفعل. انتظر قرار الإدارة.');
+                document.getElementById('advanceAmountInput').value = '';
+                alert('تم إرسال طلب السلفة. لن يُضاف إلى رصيدك إلا بعد موافقة الإدارة.');
             }).catch(err => alert('تعذر إرسال طلب السلفة: ' + err.message));
         }
 
