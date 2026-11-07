@@ -280,7 +280,8 @@
                 if (valid) {
                     if (startBox) startBox.style.display = 'none';
                     if (activeBox) activeBox.style.display = 'block';
-                    const shiftStartTime = getDriverShiftStartTime(shiftData);\n                    if (shiftStartTime > 0) runLiveTimer(shiftStartTime);
+                    const shiftStartTime = getDriverShiftStartTime(shiftData);
+                    if (shiftStartTime > 0) runLiveTimer(shiftStartTime);
                 } else {
                     if (activeBox) activeBox.style.display = 'none';
                     if (startBox) startBox.style.display = 'block';
