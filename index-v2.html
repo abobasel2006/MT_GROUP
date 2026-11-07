@@ -16,6 +16,8 @@
       <p>اختر اسمك والسيارة والوردية المعيّنة لك من لوحة الإدارة.</p>
       <label for="driverSelect">السائق والسيارة</label>
       <select id="driverSelect" class="control"><option value="">جارٍ تحميل القائمة...</option></select>
+      <label for="driverPin">رمز PIN (أربعة أرقام)</label>
+      <input id="driverPin" class="control" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" placeholder="••••">
       <button id="loginButton" class="primary" disabled>دخول إلى حسابي</button>
       <p id="loginStatus" class="notice" role="status">جارٍ الاتصال بقاعدة بيانات MT TAXI 2.0...</p>
     </section>
@@ -41,7 +43,7 @@
         <input id="endOdometer" class="control" type="number" min="0" step="1" inputmode="numeric" placeholder="أدخل قراءة العداد">
         <button id="endButton" class="danger">إنهاء الوردية</button>
       </div>
-      <p class="security-note">تنبيه أمني: تسجيل الدخول الحالي يعتمد اختيار الاسم والتخزين المحلي، ولا يثبت هوية السائق لدى Firebase. هذه النسخة لا تمنح صلاحيات آمنة قبل إعداد تحقق موثوق على الخادم وقواعد قاعدة البيانات.</p>
+      <p class="security-note">تسجيل الدخول محمي برمز PIN من أربعة أرقام، وتُنفّذ عمليات الورديات عبر الخادم اعتماداً على هوية السائق الموثقة.</p>
     </section>
     <footer>قاعدة مستقلة — mt-taxi-20</footer>
   </main>
