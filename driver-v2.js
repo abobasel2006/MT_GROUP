@@ -26,7 +26,13 @@ function formatDuration(start) {
   const s = String(seconds % 60).padStart(2, "0");
   return h + ":" + m + ":" + s;
 }
-function isStillAssigned() {\n  const driver = fleet.drivers?.[currentDriver?.driverId];\n  const car = fleet.cars?.[currentDriver?.carId];\n  const field = currentDriver?.shiftType === "day" ? "dayDriverId" : "nightDriverId";\n  return !!(driver?.active === true && car?.active === true && car[field] === currentDriver.driverId);\n}\nfunction activeShiftFor(driverId) {
+function isStillAssigned() {
+  const driver = fleet.drivers?.[currentDriver?.driverId];
+  const car = fleet.cars?.[currentDriver?.carId];
+  const field = currentDriver?.shiftType === "day" ? "dayDriverId" : "nightDriverId";
+  return !!(driver?.active === true && car?.active === true && car[field] === currentDriver.driverId);
+}
+function activeShiftFor(driverId) {
   const id = shifts.activeByDriver?.[driverId];
   return id ? shifts.history?.[id] || null : null;
 }
