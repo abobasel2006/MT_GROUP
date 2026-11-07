@@ -258,6 +258,11 @@
             return matches.length === 1 ? matches[0] : null;
         }
 
+        function getDriverShiftStartTime(shift) {
+            if (!shift || typeof shift !== 'object') return 0;
+            return Number(shift.timestamp || shift.startTime || shift.startedAt || 0);
+        }
+
         function checkActiveShiftState() {
             if (!currentDriver) return;
             const car = resolveCurrentDriverCar();
@@ -275,7 +280,7 @@
                 if (valid) {
                     if (startBox) startBox.style.display = 'none';
                     if (activeBox) activeBox.style.display = 'block';
-                    runLiveTimer(shiftData.timestamp);
+                    const shiftStartTime = getDriverShiftStartTime(shiftData);\n                    if (shiftStartTime > 0) runLiveTimer(shiftStartTime);
                 } else {
                     if (activeBox) activeBox.style.display = 'none';
                     if (startBox) startBox.style.display = 'block';
@@ -394,7 +399,7 @@
 
             // Clear only the exact shift that was finalized; never clear a newer shift.
             const clearResult = await db.ref(`activeShifts/${carId}`).transaction(current => {
-                if (!current || Number(current.timestamp) !== startTime || current.driver !== driverName) return;
+                if (!current || getDriverShiftStartTime(current) !== startTime || current.driver !== driverName) return;
                 return null;
             });
             if (!clearResult.committed && clearResult.snapshot && clearResult.snapshot.exists()) {
@@ -416,7 +421,7 @@
                 if (!shift || shift.driver !== currentDriver.name || (shift.shift && shift.shift !== currentDriver.shift)) {
                     throw new Error('لم يتم العثور على وردية نشطة مطابقة لسيارتك ووردّيتك.');
                 }
-                const startTime = Number(shift.timestamp);
+                const startTime = getDriverShiftStartTime(shift);
                 const requestedEndTime = Date.now();
                 if (!startTime || requestedEndTime <= startTime) throw new Error('بيانات وقت الوردية غير صحيحة.');
                 const endTime = shift.status === 'finalizing' ? Number(shift.endTime) : requestedEndTime;
