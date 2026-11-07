@@ -258,6 +258,11 @@
             return matches.length === 1 ? matches[0] : null;
         }
 
+        function getDriverShiftStartTime(shift) {
+            if (!shift || typeof shift !== 'object') return 0;
+            return Number(shift.timestamp || shift.startTime || shift.startedAt || 0);
+        }
+
         function checkActiveShiftState() {
             if (!currentDriver) return;
             const car = resolveCurrentDriverCar();
@@ -275,7 +280,8 @@
                 if (valid) {
                     if (startBox) startBox.style.display = 'none';
                     if (activeBox) activeBox.style.display = 'block';
-                    runLiveTimer(shiftData.timestamp);
+                    const shiftStartTime = getDriverShiftStartTime(shiftData);
+                    if (shiftStartTime > 0) runLiveTimer(shiftStartTime);
                 } else {
                     if (activeBox) activeBox.style.display = 'none';
                     if (startBox) startBox.style.display = 'block';
@@ -394,7 +400,7 @@
 
             // Clear only the exact shift that was finalized; never clear a newer shift.
             const clearResult = await db.ref(`activeShifts/${carId}`).transaction(current => {
-                if (!current || Number(current.timestamp) !== startTime || current.driver !== driverName) return;
+                if (!current || getDriverShiftStartTime(current) !== startTime || current.driver !== driverName) return;
                 return null;
             });
             if (!clearResult.committed && clearResult.snapshot && clearResult.snapshot.exists()) {
@@ -416,7 +422,7 @@
                 if (!shift || shift.driver !== currentDriver.name || (shift.shift && shift.shift !== currentDriver.shift)) {
                     throw new Error('لم يتم العثور على وردية نشطة مطابقة لسيارتك ووردّيتك.');
                 }
-                const startTime = Number(shift.timestamp);
+                const startTime = getDriverShiftStartTime(shift);
                 const requestedEndTime = Date.now();
                 if (!startTime || requestedEndTime <= startTime) throw new Error('بيانات وقت الوردية غير صحيحة.');
                 const endTime = shift.status === 'finalizing' ? Number(shift.endTime) : requestedEndTime;
@@ -426,16 +432,17 @@
                 const endImage = shift.status === 'finalizing' ? (shift.endOdoImg || '') : uploadedEndImg;
                 const finalizationToken = `${Date.now()}-${Math.random()}`;
                 return db.ref(`activeShifts/${carId}`).transaction(current => {
-                    if (!current || current.driver !== currentDriver.name || Number(current.timestamp) !== startTime ||
+                    if (!current || current.driver !== currentDriver.name ||
+                        (getDriverShiftStartTime(current) && getDriverShiftStartTime(current) !== startTime) ||
                         (current.shift && current.shift !== currentDriver.shift)) return;
                     if (current.status === 'finalizing') {
                         // A stale finalization may be resumed by either authorized app flow.
                         // Keep the original endTime and odometer image; only take over the expired lease.
                         const stale = Date.now() - Number(current.finalizingAt || 0) > 120000;
                         if (!stale) return;
-                        return { ...current, finalizingAt: Date.now(), finalizationToken };
+                        return { ...current, timestamp: startTime, finalizingAt: Date.now(), finalizationToken };
                     }
-                    return { ...current, status: 'finalizing', finalizedBy: 'driver', finalizingAt: Date.now(), finalizationToken, endTime, endOdoImg: endImage };
+                    return { ...current, timestamp: startTime, status: 'finalizing', finalizedBy: 'driver', finalizingAt: Date.now(), finalizationToken, endTime, endOdoImg: endImage };
                 }).then(claim => {
                     if (!claim.committed || claim.snapshot.val()?.finalizationToken !== finalizationToken) throw new Error('الوردية قيد الإنهاء من جهاز آخر. انتظر ثم أعد المحاولة إذا بقيت عالقة.');
                     const finalShift = claim.snapshot.val();
