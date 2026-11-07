@@ -422,15 +422,17 @@
                 const endTime = shift.status === 'finalizing' ? Number(shift.endTime) : requestedEndTime;
                 if (!endTime || endTime <= startTime) throw new Error('وقت إنهاء الوردية المحفوظ غير صحيح.');
                 if (shift.status !== 'finalizing' && !uploadedEndImg) throw new Error('الرجاء التقاط أو رفع صورة عداد نهاية الوردية.');
-                if (shift.status === 'finalizing' && shift.finalizedBy !== 'driver') throw new Error('بدأت الإدارة إنهاء هذه الوردية. انتظر تحديث الحالة.');
+                // If the admin's lease expired, the transaction below may safely resume the same saved finalization.
                 const endImage = shift.status === 'finalizing' ? (shift.endOdoImg || '') : uploadedEndImg;
                 const finalizationToken = `${Date.now()}-${Math.random()}`;
                 return db.ref(`activeShifts/${carId}`).transaction(current => {
                     if (!current || current.driver !== currentDriver.name || Number(current.timestamp) !== startTime ||
                         (current.shift && current.shift !== currentDriver.shift)) return;
                     if (current.status === 'finalizing') {
+                        // A stale finalization may be resumed by either authorized app flow.
+                        // Keep the original endTime and odometer image; only take over the expired lease.
                         const stale = Date.now() - Number(current.finalizingAt || 0) > 120000;
-                        if (current.finalizedBy !== 'driver' || !stale) return;
+                        if (!stale) return;
                         return { ...current, finalizingAt: Date.now(), finalizationToken };
                     }
                     return { ...current, status: 'finalizing', finalizedBy: 'driver', finalizingAt: Date.now(), finalizationToken, endTime, endOdoImg: endImage };
